@@ -7,6 +7,7 @@ spring:
       username: # Nacos 账号
       password: # Nacos 密码
       discovery: # 【配置中心】配置项
+        ip: 127.0.0.1 # 强制注册本机IP，避免网络切换导致IP变化
         namespace: # 命名空间。留空使用 public 默认命名空间
         group: DEFAULT_GROUP # 使用的 Nacos 配置分组，默认为 DEFAULT_GROUP
       config: # 【注册中心】配置项
