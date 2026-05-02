@@ -31,6 +31,8 @@ public class SecurityConfiguration {
                 registry.requestMatchers("/druid/**").permitAll();
                 // RPC 服务的安全配置
                 registry.requestMatchers(ApiConstants.PREFIX + "/**").permitAll();
+                // App 端公开接口
+                registry.requestMatchers("/restaurant/**").permitAll();
             }
 
         };

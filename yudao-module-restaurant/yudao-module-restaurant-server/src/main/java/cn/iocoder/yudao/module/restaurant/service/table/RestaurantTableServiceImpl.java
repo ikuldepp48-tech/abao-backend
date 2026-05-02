@@ -4,8 +4,11 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.restaurant.controller.admin.table.vo.*;
+import cn.iocoder.yudao.module.restaurant.controller.app.table.vo.RestaurantTableScanRespVO;
 import cn.iocoder.yudao.module.restaurant.convert.table.RestaurantTableConvert;
+import cn.iocoder.yudao.module.restaurant.dal.dataobject.store.RestaurantStoreDO;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.table.RestaurantTableDO;
+import cn.iocoder.yudao.module.restaurant.dal.mysql.store.RestaurantStoreMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.table.RestaurantTableMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -23,6 +26,9 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     @Resource
     private RestaurantTableMapper restaurantTableMapper;
+
+    @Resource
+    private RestaurantStoreMapper restaurantStoreMapper;
 
     @Value("${restaurant.qr-code.base-url:http://localhost:5173}")
     private String qrCodeBaseUrl;
@@ -143,6 +149,30 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         }
 
         return cn.iocoder.yudao.module.restaurant.util.PdfUtils.generateQrCodePdf(entries);
+    }
+
+    @Override
+    public RestaurantTableScanRespVO scanTable(Long storeId, Long tableId) {
+        // 查门店
+        RestaurantStoreDO store = restaurantStoreMapper.selectById(storeId);
+        if (store == null) {
+            throw exception(TABLE_NOT_EXISTS);
+        }
+        // 查桌台
+        RestaurantTableDO table = restaurantTableMapper.selectById(tableId);
+        if (table == null || !table.getStoreId().equals(storeId)) {
+            throw exception(TABLE_NOT_EXISTS);
+        }
+        // 组装返回
+        RestaurantTableScanRespVO vo = new RestaurantTableScanRespVO();
+        vo.setTenantId(store.getTenantId());
+        vo.setStoreId(store.getId());
+        vo.setStoreName(store.getName());
+        vo.setTableId(table.getId());
+        vo.setTableNo(table.getTableNo());
+        vo.setArea(table.getArea());
+        vo.setSeatCapacity(table.getSeatCapacity());
+        return vo;
     }
 
 }
