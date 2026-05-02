@@ -25,6 +25,8 @@ public interface ErrorCodeConstants {
     ErrorCode CATEGORY_HAS_CHILDREN = new ErrorCode(1_010_001_004, "分类下存在子分类，无法删除");
     ErrorCode CATEGORY_HAS_DISHES = new ErrorCode(1_010_001_005, "分类下存在菜品，无法删除");
     ErrorCode DISH_ADDON_NOT_EXISTS = new ErrorCode(1_010_001_006, "加料不存在");
+    ErrorCode DISH_SPU_MUST_HAVE_SKU = new ErrorCode(1_010_001_009, "菜品至少需要一个SKU");
+    ErrorCode DISH_SKU_PRICE_INVALID = new ErrorCode(1_010_001_010, "SKU售价必须大于0");
     ErrorCode COMBO_NOT_EXISTS = new ErrorCode(1_010_001_007, "套餐不存在");
     ErrorCode STORE_DISH_NOT_AVAILABLE = new ErrorCode(1_010_001_008, "门店未售卖该菜品");
 

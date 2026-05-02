@@ -44,6 +44,12 @@ public class RestaurantDishSpuBaseVO {
     @Schema(description = "SKU列表")
     private List<RestaurantDishSkuBaseVO> skus;
 
+    @Schema(description = "最低售价（自动计算）", example = "22.00")
+    private BigDecimal minPrice;
+
+    @Schema(description = "最高售价（自动计算）", example = "28.00")
+    private BigDecimal maxPrice;
+
     @Schema(description = "关联加料组名称列表", example = "[\"辣度\", \"加料\"]")
     private List<String> addonGroupNames;
 

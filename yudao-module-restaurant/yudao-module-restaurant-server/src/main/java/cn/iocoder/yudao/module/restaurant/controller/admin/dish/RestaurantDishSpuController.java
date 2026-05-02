@@ -6,8 +6,12 @@ import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDis
 import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDishSpuPageReqVO;
 import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDishSpuRespVO;
 import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDishSpuUpdateReqVO;
+import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDishSkuRespVO;
+import cn.iocoder.yudao.module.restaurant.convert.dish.RestaurantDishSkuConvert;
 import cn.iocoder.yudao.module.restaurant.convert.dish.RestaurantDishSpuConvert;
+import cn.iocoder.yudao.module.restaurant.dal.dataobject.dish.RestaurantDishSkuDO;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.dish.RestaurantDishSpuDO;
+import cn.iocoder.yudao.module.restaurant.service.dish.RestaurantDishSkuService;
 import cn.iocoder.yudao.module.restaurant.service.dish.RestaurantDishSpuService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,6 +36,9 @@ public class RestaurantDishSpuController {
 
     @Resource
     private RestaurantDishSpuService dishSpuService;
+
+    @Resource
+    private RestaurantDishSkuService dishSkuService;
 
     @PostMapping("/create")
     @Operation(summary = "创建菜品")
@@ -62,7 +70,11 @@ public class RestaurantDishSpuController {
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
     public CommonResult<RestaurantDishSpuRespVO> getDishSpu(@RequestParam("id") Long id) {
         RestaurantDishSpuDO dish = dishSpuService.getDishSpu(id);
-        return success(RestaurantDishSpuConvert.INSTANCE.convert(dish));
+        RestaurantDishSpuRespVO respVO = RestaurantDishSpuConvert.INSTANCE.convert(dish);
+        // 填充SKU列表
+        List<RestaurantDishSkuDO> skus = dishSkuService.getSkuListBySpuId(id);
+        respVO.setSkus(new ArrayList<>(RestaurantDishSkuConvert.INSTANCE.convertList(skus)));
+        return success(respVO);
     }
 
     @GetMapping("/list-all-simple")

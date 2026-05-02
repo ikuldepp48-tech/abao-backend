@@ -42,4 +42,8 @@ public class RestaurantDishSpuDO extends TenantBaseDO {
 
     private Integer status;
 
+    private BigDecimal minPrice;
+
+    private BigDecimal maxPrice;
+
 }

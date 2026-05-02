@@ -13,8 +13,6 @@ import jakarta.validation.constraints.NotNull;
 @ToString(callSuper = true)
 public class RestaurantDishSkuUpdateReqVO extends RestaurantDishSkuBaseVO {
 
-    @Schema(description = "SKU编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
-    @NotNull(message = "SKU编号不能为空")
-    private Long id;
+    // id 字段继承自父类 RestaurantDishSkuBaseVO
 
 }

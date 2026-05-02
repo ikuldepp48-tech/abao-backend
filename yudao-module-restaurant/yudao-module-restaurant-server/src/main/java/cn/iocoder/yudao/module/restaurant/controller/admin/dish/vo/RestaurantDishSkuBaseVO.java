@@ -10,8 +10,10 @@ import java.math.BigDecimal;
 @Data
 public class RestaurantDishSkuBaseVO {
 
-    @Schema(description = "SPU ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
-    @NotNull(message = "SPU ID不能为空")
+    @Schema(description = "SKU ID，更新时传，新增时不传", example = "1")
+    private Long id;
+
+    @Schema(description = "SPU ID，独立创建时必填，SPU内嵌时后端自动设置", example = "1")
     private Long spuId;
 
     @Schema(description = "SKU名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "大份")
