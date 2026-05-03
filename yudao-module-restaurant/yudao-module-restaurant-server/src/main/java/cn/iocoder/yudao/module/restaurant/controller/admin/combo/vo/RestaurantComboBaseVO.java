@@ -38,6 +38,12 @@ public class RestaurantComboBaseVO {
     @Schema(description = "状态：0-启用 1-禁用", example = "0")
     private Integer status;
 
+    @Schema(description = "是否支持堂食", example = "true")
+    private Boolean validForDineIn;
+
+    @Schema(description = "是否支持外卖", example = "true")
+    private Boolean validForTakeout;
+
     @Schema(description = "套餐明细")
     private List<RestaurantComboItemBaseVO> items;
 

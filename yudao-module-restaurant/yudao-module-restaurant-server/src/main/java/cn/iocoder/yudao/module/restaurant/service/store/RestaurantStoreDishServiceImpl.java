@@ -117,6 +117,30 @@ public class RestaurantStoreDishServiceImpl implements RestaurantStoreDishServic
     }
 
     @Override
+    public int overridePrice(Long id, java.math.BigDecimal price) {
+        RestaurantStoreDishDO sd = storeDishMapper.selectById(id);
+        if (sd == null) {
+            throw exception(STORE_DISH_NOT_AVAILABLE);
+        }
+        sd.setPrice(price);
+        storeDishMapper.updateById(sd);
+        eventPublisher.publishEvent(new MenuCacheEvictEvent(Set.of(sd.getStoreId())));
+        return 1;
+    }
+
+    @Override
+    public int setDailyLimit(Long id, Integer dailyLimit) {
+        RestaurantStoreDishDO sd = storeDishMapper.selectById(id);
+        if (sd == null) {
+            throw exception(STORE_DISH_NOT_AVAILABLE);
+        }
+        sd.setDailyLimit(dailyLimit);
+        storeDishMapper.updateById(sd);
+        eventPublisher.publishEvent(new MenuCacheEvictEvent(Set.of(sd.getStoreId())));
+        return 1;
+    }
+
+    @Override
     public int batchUpdateStatus(List<Long> ids, Integer status) {
         Set<Long> storeIds = new java.util.HashSet<>();
         int count = 0;

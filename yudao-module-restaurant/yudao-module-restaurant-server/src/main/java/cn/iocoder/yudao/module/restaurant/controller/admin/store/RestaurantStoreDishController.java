@@ -100,4 +100,20 @@ public class RestaurantStoreDishController {
         return success(storeDishService.batchUpdateStatus(ids, status));
     }
 
+    @PutMapping("/override-price")
+    @Operation(summary = "覆盖门店菜品价格")
+    @PreAuthorize("@ss.hasPermission('restaurant:dish:update')")
+    public CommonResult<Integer> overridePrice(@RequestParam("id") Long id,
+                                                @RequestParam("price") java.math.BigDecimal price) {
+        return success(storeDishService.overridePrice(id, price));
+    }
+
+    @PutMapping("/set-daily-limit")
+    @Operation(summary = "设置每日限量")
+    @PreAuthorize("@ss.hasPermission('restaurant:dish:update')")
+    public CommonResult<Integer> setDailyLimit(@RequestParam("id") Long id,
+                                                @RequestParam("dailyLimit") Integer dailyLimit) {
+        return success(storeDishService.setDailyLimit(id, dailyLimit));
+    }
+
 }

@@ -27,4 +27,8 @@ public interface RestaurantStoreDishService {
 
     int batchUpdateStatus(List<Long> ids, Integer status);
 
+    int overridePrice(Long id, java.math.BigDecimal price);
+
+    int setDailyLimit(Long id, Integer dailyLimit);
+
 }

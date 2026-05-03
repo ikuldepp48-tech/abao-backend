@@ -37,4 +37,8 @@ public class RestaurantComboDO extends TenantBaseDO {
 
     private Integer status;
 
+    private Boolean validForDineIn;
+
+    private Boolean validForTakeout;
+
 }

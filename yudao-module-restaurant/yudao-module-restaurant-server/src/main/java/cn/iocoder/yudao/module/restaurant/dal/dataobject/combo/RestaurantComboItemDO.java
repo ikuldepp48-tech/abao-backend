@@ -31,6 +31,10 @@ public class RestaurantComboItemDO extends TenantBaseDO {
 
     private BigDecimal extraPrice;
 
+    private Boolean isRequired;
+
+    private String replaceableSpuIds;
+
     private Integer sort;
 
 }

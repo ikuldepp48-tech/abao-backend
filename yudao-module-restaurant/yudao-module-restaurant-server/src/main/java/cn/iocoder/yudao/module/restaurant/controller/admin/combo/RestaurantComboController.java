@@ -58,7 +58,10 @@ public class RestaurantComboController {
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
     public CommonResult<RestaurantComboRespVO> getCombo(@RequestParam("id") Long id) {
         RestaurantComboDO combo = comboService.getCombo(id);
-        return success(RestaurantComboConvert.INSTANCE.convert(combo));
+        RestaurantComboRespVO respVO = RestaurantComboConvert.INSTANCE.convert(combo);
+        List<RestaurantComboItemBaseVO> items = comboService.getComboItems(id);
+        respVO.setItems(items);
+        return success(respVO);
     }
 
     @GetMapping("/items")
