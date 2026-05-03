@@ -108,7 +108,8 @@ public class RestaurantMenuServiceImpl implements RestaurantMenuService {
                 .collect(Collectors.toMap(RestaurantStoreDishDO::getSpuId, sd -> sd, (a, b) -> a));
 
         List<RestaurantDishSpuAddonRelDO> allAddonRels = spuAddonRelMapper.selectList();
-        List<RestaurantDishAddonDO> allAddons = addonMapper.selectList()
+        // 按门店品牌过滤加料（而非全租户）
+        List<RestaurantDishAddonDO> allAddons = addonMapper.selectListByBrand(store.getBrandId())
                 .stream().filter(a -> a.getStatus() == 0).toList();
 
         List<RestaurantComboDO> combos = comboMapper.selectList()
@@ -186,7 +187,14 @@ public class RestaurantMenuServiceImpl implements RestaurantMenuService {
             CategoryMenu cm = nodeMap.get(cat.getId());
             List<RestaurantDishSpuDO> catDishes = dishesByCategoryId.getOrDefault(cat.getId(), List.of());
             for (RestaurantDishSpuDO dish : catDishes) {
-                cm.getDishes().add(buildDishItem(dish, skusBySpuId, addonRelsBySpuId, addonById, storeDishBySpuId));
+                // 门店级可用性过滤：isAvailable=false 或 status=1 → 不返回
+                RestaurantStoreDishDO sd = storeDishBySpuId.get(dish.getId());
+                if (sd != null) {
+                    if (Boolean.FALSE.equals(sd.getIsAvailable()) || Integer.valueOf(1).equals(sd.getStatus())) {
+                        continue;
+                    }
+                }
+                cm.getDishes().add(buildDishItem(dish, skusBySpuId, addonRelsBySpuId, addonById, sd));
             }
         }
 
@@ -197,7 +205,7 @@ public class RestaurantMenuServiceImpl implements RestaurantMenuService {
                                     Map<Long, List<RestaurantDishSkuDO>> skusBySpuId,
                                     Map<Long, List<RestaurantDishSpuAddonRelDO>> addonRelsBySpuId,
                                     Map<Long, RestaurantDishAddonDO> addonById,
-                                    Map<Long, RestaurantStoreDishDO> storeDishBySpuId) {
+                                    RestaurantStoreDishDO sd) {
         DishItem di = new DishItem();
         di.setSpuId(dish.getId());
         di.setName(dish.getName());
@@ -215,22 +223,29 @@ public class RestaurantMenuServiceImpl implements RestaurantMenuService {
 
         List<RestaurantDishSkuDO> skus = skusBySpuId.getOrDefault(dish.getId(), List.of());
         List<SkuItem> skuItems = new ArrayList<>();
+        // 门店级价格覆盖
+        BigDecimal storePrice = sd != null ? sd.getPrice() : null;
         BigDecimal minP = null, maxP = null;
         for (RestaurantDishSkuDO sku : skus) {
             SkuItem si = new SkuItem();
             si.setId(sku.getId());
             si.setName(sku.getName());
-            si.setPrice(sku.getPrice());
+            // 价格优先级：store_dish.price > sku.price
+            BigDecimal finalPrice = storePrice != null ? storePrice : sku.getPrice();
+            si.setPrice(finalPrice);
             si.setProperties(sku.getProperties());
             skuItems.add(si);
-            if (minP == null || sku.getPrice().compareTo(minP) < 0) minP = sku.getPrice();
-            if (maxP == null || sku.getPrice().compareTo(maxP) > 0) maxP = sku.getPrice();
+            if (minP == null || finalPrice.compareTo(minP) < 0) minP = finalPrice;
+            if (maxP == null || finalPrice.compareTo(maxP) > 0) maxP = finalPrice;
         }
         di.setSkus(skuItems);
+        // 无SKU时，用SPU默认价格兜底
+        if (minP == null && dish.getPrice() != null) {
+            minP = maxP = dish.getPrice();
+        }
         di.setMinPrice(minP);
         di.setMaxPrice(maxP);
 
-        RestaurantStoreDishDO sd = storeDishBySpuId.get(dish.getId());
         di.setIsSoldOut(sd != null && Boolean.TRUE.equals(sd.getIsSoldOut()));
 
         List<RestaurantDishSpuAddonRelDO> rels = addonRelsBySpuId.getOrDefault(dish.getId(), List.of());
