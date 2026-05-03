@@ -1,10 +1,7 @@
 package cn.iocoder.yudao.module.restaurant.controller.admin.dish;
 
-import cn.idev.excel.FastExcelFactory;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDishImportResultVO;
-import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDishImportVO;
 import cn.iocoder.yudao.module.restaurant.service.dish.RestaurantDishImportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,9 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.Resource;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
@@ -32,24 +26,18 @@ public class RestaurantDishImportController {
     private RestaurantDishImportService importService;
 
     @PostMapping("/upload")
-    @Operation(summary = "导入菜品Excel")
+    @Operation(summary = "导入菜品Excel（多Sheet）")
     @PreAuthorize("@ss.hasPermission('restaurant:dish:create')")
     public CommonResult<RestaurantDishImportResultVO> importDishes(@RequestParam("file") MultipartFile file) throws IOException {
-        List<RestaurantDishImportVO> list = ExcelUtils.read(file, RestaurantDishImportVO.class);
-        RestaurantDishImportResultVO result = importService.importDishes(list);
+        RestaurantDishImportResultVO result = importService.importDishes(file);
         return success(result);
     }
 
     @GetMapping("/download-template")
-    @Operation(summary = "下载导入模板")
+    @Operation(summary = "下载导入模板（4个Sheet）")
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
     public void downloadTemplate(HttpServletResponse response) throws IOException {
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Content-Disposition",
-                "attachment;filename=" + URLEncoder.encode("菜品导入模板.xlsx", StandardCharsets.UTF_8));
-        FastExcelFactory.write(response.getOutputStream(), RestaurantDishImportVO.class)
-                .sheet("菜品").doWrite(List.of());
+        importService.generateTemplate(response);
     }
 
 }

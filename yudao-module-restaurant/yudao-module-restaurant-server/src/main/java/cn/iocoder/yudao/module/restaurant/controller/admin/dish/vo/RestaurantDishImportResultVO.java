@@ -23,6 +23,8 @@ public class RestaurantDishImportResultVO {
 
     @Data
     public static class FailDetail {
+        @Schema(description = "Sheet名", example = "简单菜品")
+        private String sheet;
         @Schema(description = "行号", example = "5")
         private int row;
         @Schema(description = "菜品名", example = "测试菜品")
@@ -31,8 +33,9 @@ public class RestaurantDishImportResultVO {
         private String reason;
     }
 
-    public void addFail(int row, String name, String reason) {
+    public void addFail(String sheet, int row, String name, String reason) {
         failDetails.add(new FailDetail() {{
+            setSheet(sheet);
             setRow(row);
             setName(name);
             setReason(reason);

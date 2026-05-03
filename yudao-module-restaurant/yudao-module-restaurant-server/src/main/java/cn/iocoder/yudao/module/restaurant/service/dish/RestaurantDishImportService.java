@@ -1,12 +1,15 @@
 package cn.iocoder.yudao.module.restaurant.service.dish;
 
 import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDishImportResultVO;
-import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDishImportVO;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
 
 public interface RestaurantDishImportService {
 
-    RestaurantDishImportResultVO importDishes(List<RestaurantDishImportVO> importList);
+    RestaurantDishImportResultVO importDishes(MultipartFile file) throws IOException;
+
+    void generateTemplate(HttpServletResponse response) throws IOException;
 
 }
