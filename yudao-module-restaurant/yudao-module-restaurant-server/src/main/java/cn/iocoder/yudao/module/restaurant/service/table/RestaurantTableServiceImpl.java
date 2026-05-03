@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.*;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.TABLE_NOT_EXISTS;
+import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
 
 @Service
 @Validated
@@ -29,6 +29,9 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     @Resource
     private RestaurantStoreMapper restaurantStoreMapper;
+
+    @Resource
+    private TableTokenService tableTokenService;
 
     @Value("${restaurant.qr-code.base-url:http://localhost:5173}")
     private String qrCodeBaseUrl;
@@ -118,14 +121,16 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         if (table == null) {
             throw exception(TABLE_NOT_EXISTS);
         }
-        // 二维码内容：包含门店ID和桌台ID的扫码URL
-        // 开发期用 localhost 占位，上线后替换为真实域名
-        String qrContent = qrCodeBaseUrl + "/scan?storeId=" + table.getStoreId() + "&tableId=" + id;
+        // 生成加密 token（防篡改）
+        String token = tableTokenService.generateToken(table.getStoreId(), id);
+        // 二维码内容：扫码URL带加密token
+        String qrContent = qrCodeBaseUrl + "/scan?token=" + token;
         byte[] qrPng = cn.iocoder.yudao.module.restaurant.util.QrCodeUtils.generatePng(qrContent);
 
-        // 把二维码内容以 Base64 形式存回数据库
+        // 存储图片路径和 token
         String qrDataUrl = "/restaurant/table/qr-image?id=" + id;
         table.setQrCode(qrDataUrl);
+        table.setQrToken(token);
         restaurantTableMapper.updateById(table);
 
         return qrPng;
@@ -142,7 +147,14 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         String[][] entries = new String[tables.size()][2];
         for (int i = 0; i < tables.size(); i++) {
             RestaurantTableDO table = tables.get(i);
-            String qrContent = qrCodeBaseUrl + "/scan?storeId=" + storeId + "&tableId=" + table.getId();
+            // 优先用已有的 token，没有则新生成
+            String token = table.getQrToken();
+            if (token == null || token.isBlank()) {
+                token = tableTokenService.generateToken(storeId, table.getId());
+                table.setQrToken(token);
+                restaurantTableMapper.updateById(table);
+            }
+            String qrContent = qrCodeBaseUrl + "/scan?token=" + token;
             byte[] qrPng = cn.iocoder.yudao.module.restaurant.util.QrCodeUtils.generatePng(qrContent);
             entries[i][0] = table.getTableNo();
             entries[i][1] = new String(java.util.Base64.getEncoder().encode(qrPng));
@@ -153,15 +165,39 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     @Override
     public RestaurantTableScanRespVO scanTable(Long storeId, Long tableId) {
+        return doScan(storeId, tableId);
+    }
+
+    @Override
+    public RestaurantTableScanRespVO scanByToken(String token) {
+        TableTokenService.TokenPayload payload;
+        try {
+            payload = tableTokenService.parseToken(token);
+        } catch (Exception e) {
+            throw exception(TABLE_TOKEN_INVALID);
+        }
+        return doScan(payload.storeId(), payload.tableId());
+    }
+
+    /** 核心扫码校验逻辑 */
+    private RestaurantTableScanRespVO doScan(Long storeId, Long tableId) {
         // 查门店
         RestaurantStoreDO store = restaurantStoreMapper.selectById(storeId);
         if (store == null) {
-            throw exception(TABLE_NOT_EXISTS);
+            throw exception(STORE_NOT_EXISTS);
+        }
+        // 校验门店营业状态
+        if (store.getStatus() != null && store.getStatus() != 0) {
+            throw exception(STORE_NOT_OPEN);
         }
         // 查桌台
         RestaurantTableDO table = restaurantTableMapper.selectById(tableId);
         if (table == null || !table.getStoreId().equals(storeId)) {
             throw exception(TABLE_NOT_EXISTS);
+        }
+        // 校验桌台状态
+        if (table.getStatus() != null && table.getStatus() == 3) {
+            throw exception(TABLE_LOCKED);
         }
         // 组装返回
         RestaurantTableScanRespVO vo = new RestaurantTableScanRespVO();

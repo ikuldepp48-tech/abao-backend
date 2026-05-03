@@ -36,6 +36,9 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_ITEM_NOT_EXISTS = new ErrorCode(1_010_002_003, "订单项不存在");
     ErrorCode REFUND_NOT_EXISTS = new ErrorCode(1_010_002_004, "退款单不存在");
     ErrorCode TABLE_OCCUPIED = new ErrorCode(1_010_002_005, "该桌台已被占用");
+    ErrorCode TABLE_TOKEN_INVALID = new ErrorCode(1_010_002_006, "二维码无效或已过期");
+    ErrorCode TABLE_LOCKED = new ErrorCode(1_010_002_007, "该桌台已被锁定，无法扫码点餐");
+    ErrorCode STORE_NOT_OPEN = new ErrorCode(1_010_002_008, "该门店当前未营业");
 
     // ========== 库存相关 1-010-003-xxx ==========
     ErrorCode MATERIAL_NOT_EXISTS = new ErrorCode(1_010_003_001, "原料不存在");

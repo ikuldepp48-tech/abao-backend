@@ -34,6 +34,8 @@ public class RestaurantTableDO extends TenantBaseDO {
 
     private String qrCode;
 
+    private String qrToken;
+
     private Integer status;
 
     private Long currentOrderId;

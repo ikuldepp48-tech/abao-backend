@@ -26,13 +26,11 @@ public class AppRestaurantTableController {
     private RestaurantTableService tableService;
 
     @GetMapping("/scan")
-    @Operation(summary = "扫码识别桌台")
-    @Parameter(name = "storeId", description = "门店ID", required = true)
-    @Parameter(name = "tableId", description = "桌台ID", required = true)
+    @Operation(summary = "扫码识别桌台（加密 token）")
+    @Parameter(name = "token", description = "二维码中的加密token", required = true)
     @PermitAll
-    public CommonResult<RestaurantTableScanRespVO> scanTable(@RequestParam("storeId") Long storeId,
-                                                              @RequestParam("tableId") Long tableId) {
-        return success(tableService.scanTable(storeId, tableId));
+    public CommonResult<RestaurantTableScanRespVO> scanTable(@RequestParam("token") String token) {
+        return success(tableService.scanByToken(token));
     }
 
 }

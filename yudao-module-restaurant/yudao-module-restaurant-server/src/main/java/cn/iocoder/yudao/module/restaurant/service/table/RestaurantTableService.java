@@ -38,4 +38,7 @@ public interface RestaurantTableService {
     /** 扫码解析：根据 storeId + tableId 返回门店和桌台信息 */
     RestaurantTableScanRespVO scanTable(Long storeId, Long tableId);
 
+    /** 扫码解析：根据加密 token 返回门店和桌台信息 */
+    RestaurantTableScanRespVO scanByToken(String token);
+
 }
