@@ -5,8 +5,12 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.restaurant.controller.admin.order.vo.RestaurantOrderPageReqVO;
 import cn.iocoder.yudao.module.restaurant.controller.app.order.vo.AppOrderCreateReqVO;
 import cn.iocoder.yudao.module.restaurant.controller.app.order.vo.AppOrderRespVO;
+import cn.iocoder.yudao.module.restaurant.dal.dataobject.dish.RestaurantDishSkuDO;
+import cn.iocoder.yudao.module.restaurant.dal.dataobject.dish.RestaurantDishSpuDO;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.order.RestaurantOrderDO;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.order.RestaurantOrderItemDO;
+import cn.iocoder.yudao.module.restaurant.dal.mysql.dish.RestaurantDishSkuMapper;
+import cn.iocoder.yudao.module.restaurant.dal.mysql.dish.RestaurantDishSpuMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderItemMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderMapper;
 import org.springframework.stereotype.Service;
@@ -22,8 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.ORDER_NOT_EXISTS;
-import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.ORDER_STATUS_ERROR;
+import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
 
 @Service
 public class RestaurantOrderServiceImpl implements RestaurantOrderService {
@@ -33,6 +36,12 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
     @Resource
     private RestaurantOrderItemMapper orderItemMapper;
+
+    @Resource
+    private RestaurantDishSkuMapper dishSkuMapper;
+
+    @Resource
+    private RestaurantDishSpuMapper dishSpuMapper;
 
     @Override
     @Transactional
@@ -50,18 +59,26 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String orderNo = "RT" + datePart + IdUtil.fastSimpleUUID().substring(0, 6).toUpperCase();
 
-        // 计算金额（服务端计算，不信任客户端）
+        // 服务端计算金额（不信任客户端传的金额）
         BigDecimal originalAmount = BigDecimal.ZERO;
         for (AppOrderCreateReqVO.OrderItem item : reqVO.getItems()) {
-            BigDecimal itemPrice = BigDecimal.ZERO; // SKU价格由后续校验补充
+            // 查 SKU 获取价格和 spuId
+            RestaurantDishSkuDO sku = dishSkuMapper.selectById(item.getSkuId());
+            if (sku == null) {
+                throw exception(DISH_SKU_NOT_EXISTS);
+            }
+            BigDecimal skuPrice = sku.getPrice() != null ? sku.getPrice() : BigDecimal.ZERO;
+
+            // 计算加料总价（同时验证客户端传的加料价格）
             BigDecimal addonTotal = BigDecimal.ZERO;
             if (item.getAddons() != null) {
                 for (AppOrderCreateReqVO.AddonItem addon : item.getAddons()) {
                     addonTotal = addonTotal.add(addon.getPrice() != null ? addon.getPrice() : BigDecimal.ZERO);
                 }
             }
-            // 简化：单价暂按0计算，实际应从数据库查SKU价格
-            originalAmount = originalAmount.add(addonTotal.multiply(BigDecimal.valueOf(item.getQuantity())));
+
+            BigDecimal itemUnitPrice = skuPrice.add(addonTotal);
+            originalAmount = originalAmount.add(itemUnitPrice.multiply(BigDecimal.valueOf(item.getQuantity())));
         }
 
         // 创建订单
@@ -84,6 +101,13 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
         // 创建订单明细
         for (AppOrderCreateReqVO.OrderItem item : reqVO.getItems()) {
+            RestaurantDishSkuDO sku = dishSkuMapper.selectById(item.getSkuId());
+            BigDecimal skuPrice = sku.getPrice() != null ? sku.getPrice() : BigDecimal.ZERO;
+
+            // 查 SPU 获取菜品名
+            RestaurantDishSpuDO spu = dishSpuMapper.selectById(sku.getSpuId());
+            String spuName = spu != null ? spu.getName() : "";
+
             BigDecimal addonTotal = BigDecimal.ZERO;
             String addonsJson = "[]";
             if (item.getAddons() != null && !item.getAddons().isEmpty()) {
@@ -94,15 +118,15 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
                         .map(a -> "{\"id\":" + a.getId() + ",\"name\":\"" + a.getName() + "\",\"price\":" + a.getPrice() + "}")
                         .collect(Collectors.joining(",", "[", "]"));
             }
-            BigDecimal unitPrice = addonTotal; // 简化
+            BigDecimal unitPrice = skuPrice.add(addonTotal);
             BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 
             RestaurantOrderItemDO orderItem = RestaurantOrderItemDO.builder()
                     .orderId(order.getId())
-                    .spuId(0L) // 可由前端传入或从SKU反查
-                    .spuName("")
+                    .spuId(sku.getSpuId())
+                    .spuName(spuName)
                     .skuId(item.getSkuId())
-                    .skuName("")
+                    .skuName(sku.getName())
                     .unitPrice(unitPrice)
                     .quantity(item.getQuantity())
                     .addonsJson(addonsJson)
