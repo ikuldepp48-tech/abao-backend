@@ -29,4 +29,6 @@ public interface RestaurantDishSpuService {
 
     List<RestaurantDishSpuDO> getDishSpuList();
 
+    List<String> getAddonGroupNamesBySpuId(Long spuId);
+
 }

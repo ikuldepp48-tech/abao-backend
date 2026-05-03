@@ -44,4 +44,12 @@ public interface RestaurantDishAddonMapper extends BaseMapperX<RestaurantDishAdd
                 .toList();
     }
 
+    default List<RestaurantDishAddonDO> selectListByBrand(Long brandId) {
+        return selectList(new LambdaQueryWrapperX<RestaurantDishAddonDO>()
+                .eqIfPresent(RestaurantDishAddonDO::getBrandId, brandId)
+                .eq(RestaurantDishAddonDO::getStatus, 0)
+                .orderByAsc(RestaurantDishAddonDO::getGroupName)
+                .orderByAsc(RestaurantDishAddonDO::getSort));
+    }
+
 }

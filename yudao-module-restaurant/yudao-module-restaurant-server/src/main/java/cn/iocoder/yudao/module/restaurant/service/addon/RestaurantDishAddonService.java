@@ -25,4 +25,6 @@ public interface RestaurantDishAddonService {
 
     PageResult<RestaurantDishAddonDO> getAddonPage(RestaurantDishAddonPageReqVO pageReqVO);
 
+    List<RestaurantDishAddonDO> getAddonListByBrand(Long brandId);
+
 }

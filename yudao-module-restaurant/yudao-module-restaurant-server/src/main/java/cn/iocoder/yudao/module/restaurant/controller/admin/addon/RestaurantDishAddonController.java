@@ -78,6 +78,14 @@ public class RestaurantDishAddonController {
         return success(addonService.getDistinctGroupNames(brandId));
     }
 
+    @GetMapping("/list-by-brand")
+    @Operation(summary = "根据品牌获取全部加料列表")
+    @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
+    public CommonResult<List<RestaurantDishAddonRespVO>> getAddonListByBrand(@RequestParam("brandId") Long brandId) {
+        List<RestaurantDishAddonDO> list = addonService.getAddonListByBrand(brandId);
+        return success(RestaurantDishAddonConvert.INSTANCE.convertList(list));
+    }
+
     @GetMapping("/page")
     @Operation(summary = "获得加料分页")
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")

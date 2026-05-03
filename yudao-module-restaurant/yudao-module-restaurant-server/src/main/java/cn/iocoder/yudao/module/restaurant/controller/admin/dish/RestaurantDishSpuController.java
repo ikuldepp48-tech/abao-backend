@@ -74,6 +74,8 @@ public class RestaurantDishSpuController {
         // 填充SKU列表
         List<RestaurantDishSkuDO> skus = dishSkuService.getSkuListBySpuId(id);
         respVO.setSkus(new ArrayList<>(RestaurantDishSkuConvert.INSTANCE.convertList(skus)));
+        // 填充加料组
+        respVO.setAddonGroupNames(dishSpuService.getAddonGroupNamesBySpuId(id));
         return success(respVO);
     }
 

@@ -253,6 +253,20 @@ public class RestaurantDishSpuServiceImpl implements RestaurantDishSpuService {
         return restaurantDishSpuMapper.selectList();
     }
 
+    @Override
+    public List<String> getAddonGroupNamesBySpuId(Long spuId) {
+        List<RestaurantDishSpuAddonRelDO> rels = spuAddonRelMapper.selectListBySpuId(spuId);
+        if (CollUtil.isEmpty(rels)) {
+            return List.of();
+        }
+        return rels.stream()
+                .map(rel -> addonMapper.selectById(rel.getAddonId()))
+                .filter(Objects::nonNull)
+                .map(RestaurantDishAddonDO::getGroupName)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
     private Set<Long> findStoreIdsBySpuId(Long spuId) {
         return storeDishMapper.selectList().stream()
                 .filter(sd -> sd.getSpuId().equals(spuId))

@@ -92,6 +92,11 @@ public class RestaurantDishAddonServiceImpl implements RestaurantDishAddonServic
         return addonMapper.selectPage(pageReqVO);
     }
 
+    @Override
+    public List<RestaurantDishAddonDO> getAddonListByBrand(Long brandId) {
+        return addonMapper.selectListByBrand(brandId);
+    }
+
     private Set<Long> findStoreIdsByAddonId(Long addonId) {
         Set<Long> spuIds = spuAddonRelMapper.selectList().stream()
                 .filter(rel -> rel.getAddonId().equals(addonId))
