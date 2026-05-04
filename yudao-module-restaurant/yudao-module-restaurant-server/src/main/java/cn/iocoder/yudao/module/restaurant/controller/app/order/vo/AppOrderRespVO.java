@@ -53,6 +53,9 @@ public class AppOrderRespVO {
     @Schema(description = "支付单ID")
     private Long payOrderId;
 
+    @Schema(description = "支付时间")
+    private LocalDateTime payTime;
+
     @Schema(description = "订单明细")
     private List<OrderItem> items;
 

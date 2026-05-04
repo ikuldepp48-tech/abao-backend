@@ -41,4 +41,10 @@ public interface RestaurantTableService {
     /** 扫码解析：根据加密 token 返回门店和桌台信息 */
     RestaurantTableScanRespVO scanByToken(String token);
 
+    /** 占用桌台（下单成功/支付成功时调用） */
+    void occupyTable(Long tableId, Long orderId);
+
+    /** 释放桌台（取消订单/订单完成时调用） */
+    void releaseTable(Long tableId);
+
 }

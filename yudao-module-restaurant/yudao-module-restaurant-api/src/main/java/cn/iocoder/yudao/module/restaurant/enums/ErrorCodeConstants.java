@@ -33,6 +33,7 @@ public interface ErrorCodeConstants {
     // ========== 订单相关 1-010-002-xxx ==========
     ErrorCode ORDER_NOT_EXISTS = new ErrorCode(1_010_002_001, "订单不存在");
     ErrorCode ORDER_STATUS_ERROR = new ErrorCode(1_010_002_002, "订单状态不正确");
+    ErrorCode ORDER_STATUS_INVALID = new ErrorCode(1_010_002_009, "订单状态流转不合法");
     ErrorCode ORDER_ITEM_NOT_EXISTS = new ErrorCode(1_010_002_003, "订单项不存在");
     ErrorCode REFUND_NOT_EXISTS = new ErrorCode(1_010_002_004, "退款单不存在");
     ErrorCode TABLE_OCCUPIED = new ErrorCode(1_010_002_005, "该桌台已被占用");

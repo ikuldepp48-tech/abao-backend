@@ -179,6 +179,28 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         return doScan(payload.storeId(), payload.tableId());
     }
 
+    @Override
+    public void occupyTable(Long tableId, Long orderId) {
+        RestaurantTableDO table = restaurantTableMapper.selectById(tableId);
+        if (table == null) {
+            throw exception(TABLE_NOT_EXISTS);
+        }
+        table.setStatus(1); // 用餐中
+        table.setCurrentOrderId(orderId);
+        restaurantTableMapper.updateById(table);
+    }
+
+    @Override
+    public void releaseTable(Long tableId) {
+        RestaurantTableDO table = restaurantTableMapper.selectById(tableId);
+        if (table == null) {
+            throw exception(TABLE_NOT_EXISTS);
+        }
+        table.setStatus(0); // 空闲
+        table.setCurrentOrderId(null);
+        restaurantTableMapper.updateById(table);
+    }
+
     /** 核心扫码校验逻辑 */
     private RestaurantTableScanRespVO doScan(Long storeId, Long tableId) {
         // 查门店

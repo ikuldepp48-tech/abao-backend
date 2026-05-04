@@ -12,10 +12,15 @@ import cn.iocoder.yudao.module.restaurant.dal.dataobject.dish.RestaurantDishSkuD
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.dish.RestaurantDishSpuDO;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.order.RestaurantOrderDO;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.order.RestaurantOrderItemDO;
+import cn.iocoder.yudao.module.restaurant.dal.dataobject.order.RestaurantOrderLogDO;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.dish.RestaurantDishSkuMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.dish.RestaurantDishSpuMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderItemMapper;
+import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderLogMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderMapper;
+import cn.iocoder.yudao.module.restaurant.enums.order.OrderStatusEnum;
+import cn.iocoder.yudao.module.restaurant.service.table.RestaurantTableService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +38,7 @@ import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionU
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
 
 @Service
+@Slf4j
 public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
     @Resource
@@ -49,6 +55,12 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
     @Resource
     private PayOrderApi payOrderApi;
+
+    @Resource
+    private RestaurantOrderLogMapper orderLogMapper;
+
+    @Resource
+    private RestaurantTableService tableService;
 
     @Override
     @Transactional
@@ -201,11 +213,94 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
         if (order == null || !order.getMemberId().equals(memberId)) {
             throw exception(ORDER_NOT_EXISTS);
         }
+        updateOrderStatus(orderId, 5, 0, memberId, "顾客取消订单");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void onPaySuccess(String orderNo, Long payOrderId) {
+        RestaurantOrderDO order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null) {
+            throw exception(ORDER_NOT_EXISTS);
+        }
+        // 幂等：非待支付状态直接返回
         if (order.getStatus() != 0) {
-            throw exception(ORDER_STATUS_ERROR);
+            return;
+        }
+        order.setStatus(1); // 已支付
+        order.setPayStatus(1);
+        order.setPayTime(LocalDateTime.now());
+        orderMapper.updateById(order);
+
+        // 记录操作日志
+        insertLog(order.getId(), 0, 1, 1, 0L, "支付成功回调，payOrderId=" + payOrderId);
+
+        // 占用桌台
+        if (order.getTableId() != null && order.getTableId() > 0) {
+            try {
+                tableService.occupyTable(order.getTableId(), order.getId());
+            } catch (Exception e) {
+                // 桌台占用失败不阻断支付回调
+                log.error("[onPaySuccess][桌台占用失败 tableId({}) orderId({})]", order.getTableId(), order.getId(), e);
+            }
+        }
+    }
+
+    @Override
+    public void updateOrderStatus(Long orderId, Integer newStatus, Integer operatorType, Long operatorId, String remark) {
+        RestaurantOrderDO order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw exception(ORDER_NOT_EXISTS);
+        }
+        Integer fromStatus = order.getStatus();
+        if (!OrderStatusEnum.canTransition(fromStatus, newStatus)) {
+            throw exception(ORDER_STATUS_INVALID, fromStatus, newStatus);
+        }
+        order.setStatus(newStatus);
+        if (newStatus == 4) { // COMPLETED
+            order.setCompleteTime(LocalDateTime.now());
+        }
+        orderMapper.updateById(order);
+
+        insertLog(orderId, fromStatus, newStatus, operatorType, operatorId, remark);
+    }
+
+    @Override
+    public void cancelOrderBySystem(Long orderId) {
+        RestaurantOrderDO order = orderMapper.selectById(orderId);
+        if (order == null || order.getStatus() != 0) {
+            return;
         }
         order.setStatus(5); // 已取消
         orderMapper.updateById(order);
+
+        insertLog(order.getId(), 0, 5, 1, 0L, "系统自动取消，超时未支付");
+
+        // 释放桌台
+        if (order.getTableId() != null && order.getTableId() > 0) {
+            try {
+                tableService.releaseTable(order.getTableId());
+            } catch (Exception e) {
+                log.error("[cancelOrderBySystem][释放桌台失败 tableId({}) orderId({})]", order.getTableId(), order.getId(), e);
+            }
+        }
+    }
+
+    @Override
+    public RestaurantOrderDO getOrderByOrderNo(String orderNo) {
+        return orderMapper.selectByOrderNo(orderNo);
+    }
+
+    private void insertLog(Long orderId, Integer fromStatus, Integer toStatus, Integer operatorType, Long operatorId, String remark) {
+        RestaurantOrderLogDO log = RestaurantOrderLogDO.builder()
+                .orderId(orderId)
+                .fromStatus(fromStatus)
+                .toStatus(toStatus)
+                .operatorType(operatorType)
+                .operatorId(operatorId)
+                .remark(remark)
+                .build();
+        orderLogMapper.insert(log);
     }
 
     @Override
@@ -239,6 +334,7 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
         vo.setRemark(order.getRemark());
         vo.setCreateTime(order.getCreateTime());
         vo.setPayOrderId(order.getPayOrderId());
+        vo.setPayTime(order.getPayTime());
 
         // 查询明细
         List<RestaurantOrderItemDO> items = orderItemMapper.selectListByOrderId(order.getId());

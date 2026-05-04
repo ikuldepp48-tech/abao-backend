@@ -28,4 +28,16 @@ public interface RestaurantOrderService {
 
     /** 用户各状态订单数量 */
     java.util.Map<String, Long> getOrderCount(Long memberId);
+
+    /** 支付成功回调 */
+    void onPaySuccess(String orderNo, Long payOrderId);
+
+    /** 通用状态变更（含校验 + 日志） */
+    void updateOrderStatus(Long orderId, Integer newStatus, Integer operatorType, Long operatorId, String remark);
+
+    /** 系统自动取消订单（超时用） */
+    void cancelOrderBySystem(Long orderId);
+
+    /** 按订单号查询 */
+    RestaurantOrderDO getOrderByOrderNo(String orderNo);
 }
