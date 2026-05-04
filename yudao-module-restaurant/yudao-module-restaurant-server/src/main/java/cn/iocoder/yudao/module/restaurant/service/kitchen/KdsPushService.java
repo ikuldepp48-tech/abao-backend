@@ -26,4 +26,24 @@ public class KdsPushService {
                 message.getData() != null ? message.getData().getOrderNo() : "null");
     }
 
+    /**
+     * 推送状态更新到指定档口
+     */
+    public void pushStatusUpdate(Long stationId, Long orderId, Long itemId, Integer newStatus) {
+        KdsPushMessage message = KdsPushMessage.builder()
+                .type("STATUS_UPDATE")
+                .data(KdsPushMessage.OrderData.builder()
+                        .orderId(orderId)
+                        .items(java.util.Collections.singletonList(
+                                KdsPushMessage.OrderItemData.builder()
+                                        .itemId(itemId)
+                                        .kdsStatus(newStatus)
+                                        .build()))
+                        .build())
+                .build();
+        messagingTemplate.convertAndSend("/topic/kds/station/" + stationId, message);
+        log.info("[pushStatusUpdate][推送到档口({}) orderId({}) itemId({}) status({})]",
+                stationId, orderId, itemId, newStatus);
+    }
+
 }

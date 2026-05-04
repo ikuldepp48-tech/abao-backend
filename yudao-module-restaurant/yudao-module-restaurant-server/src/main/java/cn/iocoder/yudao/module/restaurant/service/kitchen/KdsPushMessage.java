@@ -32,9 +32,11 @@ public class KdsPushMessage {
     @Data
     @Builder
     public static class OrderItemData {
+        private Long itemId;
         private String spuName;
         private String skuName;
         private Integer quantity;
+        private Integer kdsStatus;
         private String addonsDesc;
         private String customerRemark;
         private BigDecimal unitPrice;

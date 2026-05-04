@@ -41,4 +41,7 @@ public class RestaurantOrderItemDO extends TenantBaseDO {
 
     private BigDecimal subtotal;
 
+    /** KDS状态: 0=待制作, 1=制作中, 2=已出餐 */
+    private Integer kdsStatus;
+
 }

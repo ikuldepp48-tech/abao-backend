@@ -56,9 +56,11 @@ public class OrderPaidEventListener {
 
             List<KdsPushMessage.OrderItemData> itemDataList = items.stream()
                     .map(i -> KdsPushMessage.OrderItemData.builder()
+                            .itemId(i.getId())
                             .spuName(i.getSpuName())
                             .skuName(i.getSkuName())
                             .quantity(i.getQuantity())
+                            .kdsStatus(0)
                             .addonsDesc(i.getAddonsJson())
                             .customerRemark(i.getCustomerRemark())
                             .unitPrice(i.getUnitPrice())
