@@ -19,8 +19,10 @@ import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderItemMap
 import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderLogMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderMapper;
 import cn.iocoder.yudao.module.restaurant.enums.order.OrderStatusEnum;
+import cn.iocoder.yudao.module.restaurant.service.order.event.OrderPaidEvent;
 import cn.iocoder.yudao.module.restaurant.service.table.RestaurantTableService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +63,9 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
     @Resource
     private RestaurantTableService tableService;
+
+    @Resource
+    private ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -244,6 +249,9 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
                 log.error("[onPaySuccess][桌台占用失败 tableId({}) orderId({})]", order.getTableId(), order.getId(), e);
             }
         }
+
+        // 发布支付成功事件（事务提交后触发 KDS 推送）
+        eventPublisher.publishEvent(new OrderPaidEvent(order.getId()));
     }
 
     @Override

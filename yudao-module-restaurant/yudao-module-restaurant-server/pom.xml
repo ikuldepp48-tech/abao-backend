@@ -68,6 +68,12 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- WebSocket（KDS 厨房显示推送） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
         <!-- DB 相关 -->
         <dependency>
             <groupId>cn.iocoder.cloud</groupId>
