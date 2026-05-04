@@ -28,6 +28,7 @@
         <module>yudao-module-mes</module>
         <module>yudao-module-ai</module>
         <module>yudao-module-restaurant</module>
+        <module>yudao-module-consulting</module>
     </modules>
 
     <name>${project.artifactId}</name>
