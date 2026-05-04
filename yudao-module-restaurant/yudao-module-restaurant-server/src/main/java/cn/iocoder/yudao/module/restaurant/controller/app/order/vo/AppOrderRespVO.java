@@ -50,6 +50,9 @@ public class AppOrderRespVO {
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
 
+    @Schema(description = "支付单ID")
+    private Long payOrderId;
+
     @Schema(description = "订单明细")
     private List<OrderItem> items;
 

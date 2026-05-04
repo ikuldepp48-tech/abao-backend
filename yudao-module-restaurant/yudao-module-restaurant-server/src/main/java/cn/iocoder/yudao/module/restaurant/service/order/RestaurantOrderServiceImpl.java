@@ -1,7 +1,10 @@
 package cn.iocoder.yudao.module.restaurant.service.order;
 
 import cn.hutool.core.util.IdUtil;
+import cn.iocoder.yudao.framework.common.enums.UserTypeEnum;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.pay.api.order.PayOrderApi;
+import cn.iocoder.yudao.module.pay.api.order.dto.PayOrderCreateReqDTO;
 import cn.iocoder.yudao.module.restaurant.controller.admin.order.vo.RestaurantOrderPageReqVO;
 import cn.iocoder.yudao.module.restaurant.controller.app.order.vo.AppOrderCreateReqVO;
 import cn.iocoder.yudao.module.restaurant.controller.app.order.vo.AppOrderRespVO;
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -43,9 +47,12 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
     @Resource
     private RestaurantDishSpuMapper dishSpuMapper;
 
+    @Resource
+    private PayOrderApi payOrderApi;
+
     @Override
     @Transactional
-    public AppOrderRespVO createOrder(Long memberId, AppOrderCreateReqVO reqVO) {
+    public AppOrderRespVO createOrder(Long memberId, String userIp, AppOrderCreateReqVO reqVO) {
         // 幂等性检查：同一 clientOrderNo + memberId 不重复创建
         RestaurantOrderDO existing = orderMapper.selectOne(
                 new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<RestaurantOrderDO>()
@@ -136,6 +143,21 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
             orderItemMapper.insert(orderItem);
         }
 
+        // 调用支付服务创建支付单
+        PayOrderCreateReqDTO payReq = new PayOrderCreateReqDTO();
+        payReq.setAppKey("abao_restaurant");
+        payReq.setUserIp(userIp);
+        payReq.setUserId(memberId);
+        payReq.setUserType(UserTypeEnum.MEMBER.getValue());
+        payReq.setMerchantOrderId(orderNo);
+        payReq.setSubject("阿堡餐饮订单");
+        payReq.setBody("订单号:" + orderNo);
+        payReq.setPrice(order.getPayAmount().multiply(new BigDecimal("100")).intValue());
+        payReq.setExpireTime(LocalDateTime.now().plusMinutes(15));
+        Long payOrderId = payOrderApi.createOrder(payReq).getData();
+        order.setPayOrderId(payOrderId);
+        orderMapper.updateById(order);
+
         return buildResp(order);
     }
 
@@ -216,6 +238,7 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
         vo.setPayAmount(order.getPayAmount());
         vo.setRemark(order.getRemark());
         vo.setCreateTime(order.getCreateTime());
+        vo.setPayOrderId(order.getPayOrderId());
 
         // 查询明细
         List<RestaurantOrderItemDO> items = orderItemMapper.selectListByOrderId(order.getId());

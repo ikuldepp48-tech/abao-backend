@@ -9,7 +9,7 @@ import cn.iocoder.yudao.module.restaurant.dal.dataobject.order.RestaurantOrderDO
 public interface RestaurantOrderService {
 
     /** 创建订单 */
-    AppOrderRespVO createOrder(Long memberId, AppOrderCreateReqVO reqVO);
+    AppOrderRespVO createOrder(Long memberId, String userIp, AppOrderCreateReqVO reqVO);
 
     /** 订单详情 */
     AppOrderRespVO getOrderDetail(Long orderId);

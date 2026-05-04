@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.restaurant.controller.app.order;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.servlet.ServletUtils;
 import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
 import cn.iocoder.yudao.module.restaurant.controller.app.order.vo.AppOrderCreateReqVO;
 import cn.iocoder.yudao.module.restaurant.controller.app.order.vo.AppOrderRespVO;
@@ -10,6 +11,7 @@ import cn.iocoder.yudao.module.restaurant.service.order.RestaurantOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +29,15 @@ public class AppOrderController {
     @Resource
     private RestaurantOrderService orderService;
 
+    @Resource
+    private HttpServletRequest request;
+
     @PostMapping("/create")
     @Operation(summary = "创建订单")
     public CommonResult<AppOrderRespVO> createOrder(@Valid @RequestBody AppOrderCreateReqVO reqVO) {
         Long memberId = SecurityFrameworkUtils.getLoginUserId();
-        return success(orderService.createOrder(memberId, reqVO));
+        String userIp = ServletUtils.getClientIP(request);
+        return success(orderService.createOrder(memberId, userIp, reqVO));
     }
 
     @GetMapping("/get")

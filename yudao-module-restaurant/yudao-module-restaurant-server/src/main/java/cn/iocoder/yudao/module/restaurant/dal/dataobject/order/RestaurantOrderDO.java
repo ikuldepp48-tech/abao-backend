@@ -50,6 +50,8 @@ public class RestaurantOrderDO extends TenantBaseDO {
 
     private Long couponId;
 
+    private Long payOrderId;
+
     private LocalDateTime payTime;
 
     private LocalDateTime completeTime;
