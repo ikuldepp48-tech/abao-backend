@@ -16,4 +16,12 @@ public interface ErrorCodeConstants {
     ErrorCode CLIENT_NAME_EXISTS = new ErrorCode(1_012_000_004, "客户名称已存在");
     ErrorCode CONTACT_NOT_EXISTS = new ErrorCode(1_012_000_005, "联系人不存在");
 
+    // ========== 咨询项目 ==========
+    ErrorCode ENGAGEMENT_NOT_EXISTS = new ErrorCode(1_012_000_006, "咨询项目不存在");
+    ErrorCode ENGAGEMENT_CODE_EXISTS = new ErrorCode(1_012_000_007, "项目编号已存在");
+    ErrorCode ENGAGEMENT_PHASE_INVALID = new ErrorCode(1_012_000_008, "项目阶段无效（必须在1-6之间）");
+    ErrorCode ENGAGEMENT_PHASE_SKIP = new ErrorCode(1_012_000_009, "不能跳过阶段，当前阶段为{0}，目标阶段{1}");
+    ErrorCode ENGAGEMENT_PHASE_ALREADY_DONE = new ErrorCode(1_012_000_010, "阶段{0}已经完成");
+    ErrorCode ENGAGEMENT_PHASE_NOT_IN_PROGRESS = new ErrorCode(1_012_000_011, "项目不在进行中状态，无法推进阶段");
+
 }
