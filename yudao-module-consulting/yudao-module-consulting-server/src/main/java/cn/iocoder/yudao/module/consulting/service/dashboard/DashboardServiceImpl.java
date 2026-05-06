@@ -77,11 +77,42 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         List<ClientRankingItemVO> ranking = new ArrayList<>();
+        int totalScoreSum = 0;
+
         for (ConsultingClientDO client : clients) {
             int communicationScore = calcCommunicationScore(client.getId());
             int projectScore = calcProjectScore(client.getId());
             int contractScore = calcContractScore(client);
             int totalScore = communicationScore + projectScore + contractScore;
+            totalScoreSum += totalScore;
+
+            // 健康度等级
+            String healthLevel;
+            if (totalScore >= 70) {
+                healthLevel = "green";
+            } else if (totalScore >= 40) {
+                healthLevel = "yellow";
+            } else {
+                healthLevel = "red";
+            }
+
+            // 预警原因
+            List<String> warnings = new ArrayList<>();
+            if (communicationScore < 10) {
+                warnings.add("30天未沟通");
+            }
+            if (projectScore < 10) {
+                warnings.add("项目停滞");
+            }
+            if (contractScore < 10) {
+                warnings.add("合同即将到期");
+            }
+
+            // 紧急操作建议
+            String urgentAction = "";
+            if (totalScore < 40) {
+                urgentAction = "立即跟进";
+            }
 
             ranking.add(ClientRankingItemVO.builder()
                     .clientId(client.getId())
@@ -90,7 +121,16 @@ public class DashboardServiceImpl implements DashboardService {
                     .communicationScore(communicationScore)
                     .projectScore(projectScore)
                     .contractScore(contractScore)
+                    .healthLevel(healthLevel)
+                    .warnings(warnings)
+                    .urgentAction(urgentAction)
                     .build());
+        }
+
+        // 计算平均分
+        int avgScore = ranking.isEmpty() ? 0 : totalScoreSum / ranking.size();
+        for (ClientRankingItemVO item : ranking) {
+            item.setAvgScore(avgScore);
         }
 
         // 按总分升序（最差的排最前）
@@ -161,31 +201,59 @@ public class DashboardServiceImpl implements DashboardService {
         todos.addAll(findPhaseStalled(clientMap));
         todos.addAll(findDeliverableDue(clientMap));
 
-        // 按优先级排序：high 在前
-        todos.sort(Comparator.comparing(t -> "high".equals(t.getPriority()) ? 0 : 1));
+        // 按优先级排序：critical > warning > info
+        todos.sort(Comparator.comparingInt(t -> {
+            return switch (t.getPriority()) {
+                case "critical" -> 0;
+                case "warning" -> 1;
+                default -> 2;
+            };
+        }));
         return todos;
     }
 
-    /** 合同即将到期：serviceEndDate 在未来 30 天内 */
+    /** 合同即将到期：按剩余天数分级 */
     private List<UrgentTodoItemVO> findContractExpiring(Map<Long, ConsultingClientDO> clientMap) {
         List<UrgentTodoItemVO> result = new ArrayList<>();
         LocalDate today = LocalDate.now();
-        LocalDate threshold = today.plusDays(30);
 
         for (ConsultingClientDO client : clientMap.values()) {
             LocalDate endDate = client.getServiceEndDate();
-            if (endDate == null || endDate.isBefore(today) || endDate.isAfter(threshold)) {
+            if (endDate == null || endDate.isBefore(today)) {
                 continue;
             }
-            long remainingDays = ChronoUnit.DAYS.between(today, endDate);
+            long daysRemaining = ChronoUnit.DAYS.between(today, endDate);
+            if (daysRemaining > 30) {
+                continue;
+            }
+
+            String priority;
+            String detail;
+            List<String> actions = new ArrayList<>();
+            actions.add("续约");
+
+            if (daysRemaining <= 7) {
+                priority = "critical";
+                detail = "合同将于 " + daysRemaining + " 天后到期，必须本周处理";
+                actions.add("终止");
+            } else if (daysRemaining <= 14) {
+                priority = "warning";
+                detail = "合同将于 " + daysRemaining + " 天后到期，请本周内关注";
+            } else {
+                priority = "info";
+                detail = "合同将于 " + daysRemaining + " 天后到期，提前准备续约";
+            }
+
             result.add(UrgentTodoItemVO.builder()
                     .type("contract_expiring")
                     .title(client.getName() + " 服务合同即将到期")
                     .clientId(client.getId())
                     .clientName(client.getName())
-                    .priority("high")
+                    .priority(priority)
                     .deadline(endDate)
-                    .detail("合同将于 " + remainingDays + " 天后到期，请及时续约")
+                    .daysRemaining((int) daysRemaining)
+                    .detail(detail)
+                    .actions(actions)
                     .build());
         }
         return result;
@@ -201,7 +269,7 @@ public class DashboardServiceImpl implements DashboardService {
         for (ConsultingEngagementDO e : engagements) {
             Integer phase = e.getCurrentPhase();
             if (phase == null || phase == 0) {
-                continue; // 还没开始推进
+                continue;
             }
             LocalDateTime lastDone = getPhaseDoneTime(e, phase);
             if (lastDone == null || lastDone.isAfter(threshold)) {
@@ -210,26 +278,39 @@ public class DashboardServiceImpl implements DashboardService {
             long daysStalled = ChronoUnit.DAYS.between(lastDone.toLocalDate(), LocalDate.now());
             String clientName = clientMap.containsKey(e.getClientId())
                     ? clientMap.get(e.getClientId()).getName() : "未知客户";
+
+            String priority;
+            List<String> actions = new ArrayList<>();
+            actions.add("推进阶段");
+            if (daysStalled > 30) {
+                priority = "critical";
+            } else if (daysStalled > 14) {
+                priority = "warning";
+            } else {
+                priority = "info";
+            }
+
             result.add(UrgentTodoItemVO.builder()
                     .type("phase_stalled")
                     .title("项目「" + e.getTitle() + "」阶段停滞")
                     .clientId(e.getClientId())
                     .clientName(clientName)
-                    .priority("medium")
+                    .priority(priority)
                     .deadline(LocalDate.now().plusDays(7))
-                    .detail("当前阶段 " + phase + " 已停滞 " + daysStalled + " 天，请尽快推进下一阶段")
+                    .daysRemaining(7)
+                    .detail("当前阶段 " + phase + " 已停滞 " + daysStalled + " 天，请尽快推进")
+                    .actions(actions)
                     .build());
         }
         return result;
     }
 
-    /** 交付物即将到期：dueDate 在未来 7 天内且未完成 */
+    /** 交付物即将到期：按剩余天数分级 */
     private List<UrgentTodoItemVO> findDeliverableDue(Map<Long, ConsultingClientDO> clientMap) {
         List<UrgentTodoItemVO> result = new ArrayList<>();
         List<ConsultingEngagementDO> engagements = engagementMapper.selectList(
                 ConsultingEngagementDO::getStatus, "in_progress");
         LocalDate today = LocalDate.now();
-        LocalDate threshold = today.plusDays(7);
 
         for (ConsultingEngagementDO e : engagements) {
             List<DeliverableItem> deliverables = e.getDeliverables();
@@ -237,26 +318,44 @@ public class DashboardServiceImpl implements DashboardService {
                 continue;
             }
             for (DeliverableItem item : deliverables) {
-                if (item.getDueDate() == null) {
-                    continue;
-                }
-                if ("accepted".equals(item.getStatus())) {
-                    continue;
-                }
-                if (item.getDueDate().isBefore(today) || item.getDueDate().isAfter(threshold)) {
+                if (item.getDueDate() == null || "accepted".equals(item.getStatus())) {
                     continue;
                 }
                 String clientName = clientMap.containsKey(e.getClientId())
                         ? clientMap.get(e.getClientId()).getName() : "未知客户";
-                long remaining = ChronoUnit.DAYS.between(today, item.getDueDate());
+                long daysRemaining = ChronoUnit.DAYS.between(today, item.getDueDate());
+
+                // 30天以内的交付物
+                if (Math.abs(daysRemaining) > 30 && daysRemaining > 0) {
+                    continue;
+                }
+
+                String priority;
+                List<String> actions = new ArrayList<>();
+                actions.add("标记完成");
+
+                if (daysRemaining <= 0) {
+                    priority = "critical";
+                    actions.add("延期");
+                } else if (daysRemaining <= 7) {
+                    priority = "critical";
+                    actions.add("延期");
+                } else if (daysRemaining <= 14) {
+                    priority = "warning";
+                } else {
+                    priority = "info";
+                }
+
                 result.add(UrgentTodoItemVO.builder()
                         .type("deliverable_due")
                         .title("交付物「" + item.getName() + "」即将到期")
                         .clientId(e.getClientId())
                         .clientName(clientName)
-                        .priority("high")
+                        .priority(priority)
                         .deadline(item.getDueDate())
-                        .detail("项目「" + e.getTitle() + "」的交付物，距截止日还有 " + remaining + " 天，当前状态：" + item.getStatus())
+                        .daysRemaining((int) daysRemaining)
+                        .detail("项目「" + e.getTitle() + "」，当前状态：" + item.getStatus())
+                        .actions(actions)
                         .build());
             }
         }
@@ -391,6 +490,72 @@ public class DashboardServiceImpl implements DashboardService {
                     .build());
         }
         return items;
+    }
+
+    // ==================== 5. Client Panorama ====================
+
+    @Override
+    public List<ClientPanoramaRespVO> getClientPanorama() {
+        List<ConsultingClientDO> clients = clientMapper.selectList();
+        if (clients.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 计算平均分
+        int totalScoreSum = 0;
+        for (ConsultingClientDO client : clients) {
+            totalScoreSum += calcCommunicationScore(client.getId())
+                    + calcProjectScore(client.getId())
+                    + calcContractScore(client);
+        }
+        int avgScore = totalScoreSum / clients.size();
+
+        // 获取所有项目
+        List<ConsultingEngagementDO> allEngagements = engagementMapper.selectList();
+        Map<Long, List<ConsultingEngagementDO>> engagementByClient = allEngagements.stream()
+                .collect(Collectors.groupingBy(ConsultingEngagementDO::getClientId));
+
+        List<ClientPanoramaRespVO> result = new ArrayList<>();
+        for (ConsultingClientDO client : clients) {
+            int score = calcCommunicationScore(client.getId())
+                    + calcProjectScore(client.getId())
+                    + calcContractScore(client);
+
+            String healthLevel;
+            if (score >= 70) {
+                healthLevel = "green";
+            } else if (score >= 40) {
+                healthLevel = "yellow";
+            } else {
+                healthLevel = "red";
+            }
+
+            List<ConsultingEngagementDO> clientEngagements = engagementByClient.getOrDefault(
+                    client.getId(), Collections.emptyList());
+            int activeCount = (int) clientEngagements.stream()
+                    .filter(e -> "in_progress".equals(e.getStatus())).count();
+            List<String> titles = clientEngagements.stream()
+                    .map(ConsultingEngagementDO::getTitle)
+                    .collect(Collectors.toList());
+
+            result.add(ClientPanoramaRespVO.builder()
+                    .clientId(client.getId())
+                    .clientName(client.getName())
+                    .shortName(client.getShortName())
+                    .industry(client.getIndustry())
+                    .score(score)
+                    .healthLevel(healthLevel)
+                    .activeEngagementCount(activeCount)
+                    .engagementTitles(titles)
+                    .storeCount(client.getStoreCount())
+                    .status(client.getStatus())
+                    .avgScore(avgScore)
+                    .build());
+        }
+
+        // 按健康分升序
+        result.sort(Comparator.comparingInt(ClientPanoramaRespVO::getScore));
+        return result;
     }
 
     // ==================== Helper ====================

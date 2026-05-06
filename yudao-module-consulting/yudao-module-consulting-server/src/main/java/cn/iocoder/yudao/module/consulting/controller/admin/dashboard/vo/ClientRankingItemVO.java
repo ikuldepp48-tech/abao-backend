@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Schema(description = "管理后台 - 客户健康度排行项 Response VO")
 @Data
 @Builder
@@ -30,5 +32,17 @@ public class ClientRankingItemVO {
 
     @Schema(description = "合同剩余分 (0-30)", example = "20")
     private Integer contractScore;
+
+    @Schema(description = "健康度等级: green / yellow / red", example = "yellow")
+    private String healthLevel;
+
+    @Schema(description = "紧急操作建议，空字符串表示无需紧急操作", example = "立即跟进")
+    private String urgentAction;
+
+    @Schema(description = "预警原因列表", example = "[\"30天未沟通\", \"合同即将到期\"]")
+    private List<String> warnings;
+
+    @Schema(description = "所有客户平均分", example = "62")
+    private Integer avgScore;
 
 }

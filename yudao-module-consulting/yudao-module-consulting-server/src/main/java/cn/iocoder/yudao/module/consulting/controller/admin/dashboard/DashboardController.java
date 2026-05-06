@@ -51,4 +51,11 @@ public class DashboardController {
         return success(dashboardService.getWeekSchedule());
     }
 
+    @GetMapping("/client-panorama")
+    @Operation(summary = "获取客户全景视图（所有客户含健康度）")
+    @PreAuthorize("@ss.hasPermission('consulting:client:query')")
+    public CommonResult<List<ClientPanoramaRespVO>> getClientPanorama() {
+        return success(dashboardService.getClientPanorama());
+    }
+
 }

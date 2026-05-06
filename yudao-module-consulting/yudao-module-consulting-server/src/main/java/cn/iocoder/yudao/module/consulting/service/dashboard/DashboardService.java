@@ -29,4 +29,9 @@ public interface DashboardService {
      */
     List<WeekScheduleItemVO> getWeekSchedule();
 
+    /**
+     * 获取客户全景视图（所有客户，含健康度数据）
+     */
+    List<ClientPanoramaRespVO> getClientPanorama();
+
 }
