@@ -13,6 +13,7 @@ public interface RestaurantOrderMapper extends BaseMapperX<RestaurantOrderDO> {
     default PageResult<RestaurantOrderDO> selectPage(RestaurantOrderPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<RestaurantOrderDO>()
                 .eqIfPresent(RestaurantOrderDO::getStoreId, reqVO.getStoreId())
+                .eqIfPresent(RestaurantOrderDO::getOrderNo, reqVO.getOrderNo())
                 .eqIfPresent(RestaurantOrderDO::getStatus, reqVO.getStatus())
                 .betweenIfPresent(RestaurantOrderDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(RestaurantOrderDO::getId));

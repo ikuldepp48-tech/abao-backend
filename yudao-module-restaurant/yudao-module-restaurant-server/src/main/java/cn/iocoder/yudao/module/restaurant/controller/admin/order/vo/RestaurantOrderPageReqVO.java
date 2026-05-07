@@ -15,6 +15,9 @@ import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_
 @EqualsAndHashCode(callSuper = true)
 public class RestaurantOrderPageReqVO extends PageParam {
 
+    @Schema(description = "订单号", example = "ORD202605050001")
+    private String orderNo;
+
     @Schema(description = "门店ID", example = "1001")
     private Long storeId;
 

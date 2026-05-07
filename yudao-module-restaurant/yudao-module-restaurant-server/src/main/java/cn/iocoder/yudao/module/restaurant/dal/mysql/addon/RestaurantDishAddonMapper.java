@@ -32,8 +32,8 @@ public interface RestaurantDishAddonMapper extends BaseMapperX<RestaurantDishAdd
     default List<String> selectDistinctGroupNames(Long brandId) {
         LambdaQueryWrapper<RestaurantDishAddonDO> wrapper = new LambdaQueryWrapper<RestaurantDishAddonDO>()
                 .select(RestaurantDishAddonDO::getGroupName)
-                .orderByAsc(RestaurantDishAddonDO::getSort)
-                .groupBy(RestaurantDishAddonDO::getGroupName);
+                .groupBy(RestaurantDishAddonDO::getGroupName)
+                .orderByAsc(RestaurantDishAddonDO::getGroupName);
         if (brandId != null) {
             wrapper.eq(RestaurantDishAddonDO::getBrandId, brandId);
         }
