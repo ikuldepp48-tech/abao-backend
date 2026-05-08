@@ -21,7 +21,9 @@ import cn.iocoder.yudao.module.restaurant.dal.mysql.store.RestaurantStoreMapper;
 import cn.iocoder.yudao.module.restaurant.service.menu.MenuCacheEvictEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.transaction.annotation.Transactional;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.annotation.Resource;
@@ -60,6 +62,8 @@ public class RestaurantDishSpuServiceImpl implements RestaurantDishSpuService {
     private ApplicationEventPublisher eventPublisher;
 
     @Override
+    @LogRecord(type = DISH_TYPE, subType = DISH_CREATE_SUB_TYPE, bizNo = "{{#createReqVO.name}}",
+            success = DISH_CREATE_SUCCESS)
     @Transactional
     public Long createDishSpu(RestaurantDishSpuCreateReqVO createReqVO) {
         // 校验：至少1个SKU
@@ -83,6 +87,8 @@ public class RestaurantDishSpuServiceImpl implements RestaurantDishSpuService {
     }
 
     @Override
+    @LogRecord(type = DISH_TYPE, subType = DISH_UPDATE_SUB_TYPE, bizNo = "{{#updateReqVO.id}}",
+            success = DISH_UPDATE_SUCCESS)
     @Transactional
     public void updateDishSpu(RestaurantDishSpuUpdateReqVO updateReqVO) {
         Long spuId = updateReqVO.getId();
@@ -107,6 +113,8 @@ public class RestaurantDishSpuServiceImpl implements RestaurantDishSpuService {
     }
 
     @Override
+    @LogRecord(type = DISH_TYPE, subType = DISH_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = DISH_DELETE_SUCCESS)
     @Transactional
     public void deleteDishSpu(Long id) {
         validateDishSpuExists(id);

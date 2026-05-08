@@ -12,7 +12,9 @@ import cn.iocoder.yudao.module.restaurant.dal.mysql.store.RestaurantStoreMapper;
 import cn.iocoder.yudao.module.restaurant.service.menu.MenuCacheEvictEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.transaction.annotation.Transactional;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.annotation.Resource;
@@ -40,6 +42,8 @@ public class RestaurantComboServiceImpl implements RestaurantComboService {
     private ApplicationEventPublisher eventPublisher;
 
     @Override
+    @LogRecord(type = COMBO_TYPE, subType = COMBO_CREATE_SUB_TYPE, bizNo = "{{#createReqVO.name}}",
+            success = COMBO_CREATE_SUCCESS)
     @Transactional
     public Long createCombo(RestaurantComboCreateReqVO createReqVO) {
         RestaurantComboDO combo = RestaurantComboConvert.INSTANCE.convert(createReqVO);
@@ -55,6 +59,8 @@ public class RestaurantComboServiceImpl implements RestaurantComboService {
     }
 
     @Override
+    @LogRecord(type = COMBO_TYPE, subType = COMBO_UPDATE_SUB_TYPE, bizNo = "{{#updateReqVO.id}}",
+            success = COMBO_UPDATE_SUCCESS)
     @Transactional
     public void updateCombo(RestaurantComboUpdateReqVO updateReqVO) {
         validateComboExists(updateReqVO.getId());
@@ -71,6 +77,8 @@ public class RestaurantComboServiceImpl implements RestaurantComboService {
     }
 
     @Override
+    @LogRecord(type = COMBO_TYPE, subType = COMBO_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = COMBO_DELETE_SUCCESS)
     @Transactional
     public void deleteCombo(Long id) {
         validateComboExists(id);

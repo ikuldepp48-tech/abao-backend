@@ -24,7 +24,9 @@ import cn.iocoder.yudao.module.restaurant.service.table.RestaurantTableService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.transaction.annotation.Transactional;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 import jakarta.annotation.Resource;
 import java.math.BigDecimal;
@@ -68,6 +70,8 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
     private ApplicationEventPublisher eventPublisher;
 
     @Override
+    @LogRecord(type = ORDER_TYPE, subType = ORDER_CREATE_SUB_TYPE, bizNo = "{{#order.orderNo}}",
+            success = ORDER_CREATE_SUCCESS)
     @Transactional
     public AppOrderRespVO createOrder(Long memberId, String userIp, AppOrderCreateReqVO reqVO) {
         // 幂等性检查：同一 clientOrderNo + memberId 不重复创建
@@ -213,6 +217,9 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
     }
 
     @Override
+    @LogRecord(type = ORDER_TYPE, subType = ORDER_CANCEL_SUB_TYPE, bizNo = "{{#orderId}}",
+            success = ORDER_CANCEL_SUCCESS)
+    @Transactional(rollbackFor = Exception.class)
     public void cancelOrder(Long orderId, Long memberId) {
         RestaurantOrderDO order = orderMapper.selectById(orderId);
         if (order == null || !order.getMemberId().equals(memberId)) {
@@ -255,6 +262,7 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateOrderStatus(Long orderId, Integer newStatus, Integer operatorType, Long operatorId, String remark) {
         RestaurantOrderDO order = orderMapper.selectById(orderId);
         if (order == null) {
@@ -274,6 +282,7 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void cancelOrderBySystem(Long orderId) {
         RestaurantOrderDO order = orderMapper.selectById(orderId);
         if (order == null || order.getStatus() != 0) {

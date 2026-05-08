@@ -18,8 +18,11 @@ import java.util.stream.Collectors;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.STORE_DISH_NOT_AVAILABLE;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @Validated
+@Transactional(rollbackFor = Exception.class)
 public class RestaurantStoreDishServiceImpl implements RestaurantStoreDishService {
 
     @Resource

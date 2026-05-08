@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import com.mzt.logapi.starter.annotation.LogRecord;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
@@ -28,6 +30,8 @@ public class PayNotifyController {
     private RestaurantOrderService orderService;
 
     @ApiAccessLog(operateType = UPDATE)
+    @LogRecord(type = ORDER_TYPE, subType = ORDER_PAY_SUCCESS_SUB_TYPE, bizNo = "{{#reqDTO.merchantOrderId}}",
+            success = ORDER_PAY_SUCCESS)
     @PostMapping("/pay-success")
     @Operation(summary = "支付成功回调")
     @PermitAll

@@ -22,8 +22,11 @@ import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.BRAND_
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.BRAND_NAME_EXISTS;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.BRAND_CODE_EXISTS;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @Validated
+@Transactional(rollbackFor = Exception.class)
 public class RestaurantBrandServiceImpl implements RestaurantBrandService {
 
     @Resource

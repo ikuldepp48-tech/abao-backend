@@ -14,7 +14,10 @@ import java.util.List;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class RestaurantPrinterServiceImpl implements RestaurantPrinterService {
 
     @Resource
