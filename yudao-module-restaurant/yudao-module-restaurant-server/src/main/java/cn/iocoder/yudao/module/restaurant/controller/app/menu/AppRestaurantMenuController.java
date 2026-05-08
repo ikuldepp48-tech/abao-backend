@@ -14,6 +14,8 @@ import jakarta.annotation.Resource;
 import jakarta.annotation.security.PermitAll;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "用户端 - 菜单查询")
 @RestController
@@ -24,6 +26,7 @@ public class AppRestaurantMenuController {
     @Resource
     private RestaurantMenuService menuService;
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/list")
     @Operation(summary = "获取门店菜单（分类树+菜品+SKU+加料+套餐）")
     @Parameter(name = "storeId", description = "门店ID", required = true, example = "1")
@@ -32,6 +35,7 @@ public class AppRestaurantMenuController {
         return success(menuService.getMenu(storeId));
     }
 
+    @ApiAccessLog(operateType = DELETE)
     @DeleteMapping("/refresh-cache")
     @Operation(summary = "刷新菜单缓存")
     @Parameter(name = "storeId", description = "门店ID", required = true, example = "1")

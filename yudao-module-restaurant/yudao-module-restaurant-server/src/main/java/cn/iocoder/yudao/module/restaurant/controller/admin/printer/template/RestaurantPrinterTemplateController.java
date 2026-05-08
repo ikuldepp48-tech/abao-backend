@@ -15,6 +15,8 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - 打印模板配置")
 @RestController
@@ -25,6 +27,7 @@ public class RestaurantPrinterTemplateController {
     @Resource
     private RestaurantPrinterTemplateService templateService;
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/get-by-printer")
     @Operation(summary = "根据打印机获取模板")
     @Parameter(name = "printerId", description = "打印机ID", required = true)
@@ -33,6 +36,7 @@ public class RestaurantPrinterTemplateController {
         return success(templateService.getByPrinterId(printerId));
     }
 
+    @ApiAccessLog(operateType = UPDATE)
     @PutMapping("/save")
     @Operation(summary = "保存打印模板")
     @PreAuthorize("@ss.hasPermission('restaurant:printer:update')")

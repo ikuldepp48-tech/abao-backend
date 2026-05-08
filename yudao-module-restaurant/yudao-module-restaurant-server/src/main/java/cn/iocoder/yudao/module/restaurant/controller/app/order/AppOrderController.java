@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "顾客端 - 订单")
 @RestController
@@ -32,6 +34,7 @@ public class AppOrderController {
     @Resource
     private HttpServletRequest request;
 
+    @ApiAccessLog(operateType = CREATE)
     @PostMapping("/create")
     @Operation(summary = "创建订单")
     public CommonResult<AppOrderRespVO> createOrder(@Valid @RequestBody AppOrderCreateReqVO reqVO) {
@@ -40,6 +43,7 @@ public class AppOrderController {
         return success(orderService.createOrder(memberId, userIp, reqVO));
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/get")
     @Operation(summary = "订单详情")
     @Parameter(name = "id", description = "订单ID", required = true)
@@ -48,6 +52,7 @@ public class AppOrderController {
         return success(orderService.getOrderDetail(id, memberId));
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/page")
     @Operation(summary = "我的订单分页")
     public CommonResult<PageResult<RestaurantOrderDO>> getOrderPage(
@@ -58,6 +63,7 @@ public class AppOrderController {
         return success(orderService.getOrderPage(memberId, pageNo, pageSize, status));
     }
 
+    @ApiAccessLog(operateType = UPDATE)
     @PostMapping("/cancel")
     @Operation(summary = "取消订单")
     @Parameter(name = "id", description = "订单ID", required = true)
@@ -67,6 +73,7 @@ public class AppOrderController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/count")
     @Operation(summary = "订单数量统计")
     public CommonResult<java.util.Map<String, Long>> getOrderCount() {

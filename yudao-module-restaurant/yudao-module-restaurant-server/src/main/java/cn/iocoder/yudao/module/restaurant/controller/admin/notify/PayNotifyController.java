@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - 支付回调通知")
 @RestController
@@ -25,6 +27,7 @@ public class PayNotifyController {
     @Resource
     private RestaurantOrderService orderService;
 
+    @ApiAccessLog(operateType = UPDATE)
     @PostMapping("/pay-success")
     @Operation(summary = "支付成功回调")
     @PermitAll

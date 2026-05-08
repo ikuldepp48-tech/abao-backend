@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - 咨询客户档案")
 @RestController
@@ -29,6 +31,7 @@ public class ConsultingClientController {
     @Resource
     private ConsultingClientService clientService;
 
+    @ApiAccessLog(operateType = CREATE)
     @PostMapping("/create")
     @Operation(summary = "创建咨询客户档案")
     @PreAuthorize("@ss.hasPermission('consulting:client:create')")
@@ -36,6 +39,7 @@ public class ConsultingClientController {
         return success(clientService.createClient(createReqVO));
     }
 
+    @ApiAccessLog(operateType = UPDATE)
     @PutMapping("/update")
     @Operation(summary = "更新咨询客户档案")
     @PreAuthorize("@ss.hasPermission('consulting:client:update')")
@@ -44,6 +48,7 @@ public class ConsultingClientController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = DELETE)
     @DeleteMapping("/delete")
     @Operation(summary = "删除咨询客户档案")
     @Parameter(name = "id", description = "编号", required = true)
@@ -53,6 +58,7 @@ public class ConsultingClientController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/get")
     @Operation(summary = "获得咨询客户档案")
     @Parameter(name = "id", description = "编号", required = true, example = "1")
@@ -62,6 +68,7 @@ public class ConsultingClientController {
         return success(ConsultingClientConvert.INSTANCE.convert(client));
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/list-all-simple")
     @Operation(summary = "获取咨询客户档案精简信息列表", description = "主要用于前端的下拉选项")
     public CommonResult<List<ConsultingClientRespVO>> getSimpleClientList() {
@@ -69,6 +76,7 @@ public class ConsultingClientController {
         return success(ConsultingClientConvert.INSTANCE.convertList(list));
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/list")
     @Operation(summary = "获得咨询客户档案列表")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1,2")
@@ -78,6 +86,7 @@ public class ConsultingClientController {
         return success(ConsultingClientConvert.INSTANCE.convertList(list));
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/page")
     @Operation(summary = "获得咨询客户档案分页")
     @PreAuthorize("@ss.hasPermission('consulting:client:query')")

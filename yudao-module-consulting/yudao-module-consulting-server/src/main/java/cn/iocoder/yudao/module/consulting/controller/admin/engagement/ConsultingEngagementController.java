@@ -17,6 +17,8 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - 咨询项目")
 @RestController
@@ -27,6 +29,7 @@ public class ConsultingEngagementController {
     @Resource
     private ConsultingEngagementService engagementService;
 
+    @ApiAccessLog(operateType = CREATE)
     @PostMapping("/create")
     @Operation(summary = "创建咨询项目")
     @PreAuthorize("@ss.hasPermission('consulting:engagement:create')")
@@ -34,6 +37,7 @@ public class ConsultingEngagementController {
         return success(engagementService.createEngagement(createReqVO));
     }
 
+    @ApiAccessLog(operateType = UPDATE)
     @PutMapping("/update")
     @Operation(summary = "更新咨询项目")
     @PreAuthorize("@ss.hasPermission('consulting:engagement:update')")
@@ -42,6 +46,7 @@ public class ConsultingEngagementController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = DELETE)
     @DeleteMapping("/delete")
     @Operation(summary = "删除咨询项目")
     @Parameter(name = "id", description = "编号", required = true)
@@ -51,6 +56,7 @@ public class ConsultingEngagementController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/get")
     @Operation(summary = "获得咨询项目")
     @Parameter(name = "id", description = "编号", required = true, example = "1")
@@ -60,6 +66,7 @@ public class ConsultingEngagementController {
         return success(ConsultingEngagementConvert.INSTANCE.convert(engagement));
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/page")
     @Operation(summary = "获得咨询项目分页")
     @PreAuthorize("@ss.hasPermission('consulting:engagement:query')")
@@ -68,6 +75,7 @@ public class ConsultingEngagementController {
         return success(ConsultingEngagementConvert.INSTANCE.convertPage(pageResult));
     }
 
+    @ApiAccessLog(operateType = UPDATE)
     @PutMapping("/advance-phase")
     @Operation(summary = "推进项目阶段")
     @PreAuthorize("@ss.hasPermission('consulting:engagement:update')")

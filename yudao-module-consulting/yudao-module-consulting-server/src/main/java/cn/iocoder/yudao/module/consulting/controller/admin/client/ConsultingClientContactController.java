@@ -17,6 +17,8 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - 咨询客户联系人")
 @RestController
@@ -27,6 +29,7 @@ public class ConsultingClientContactController {
     @Resource
     private ConsultingClientContactService contactService;
 
+    @ApiAccessLog(operateType = CREATE)
     @PostMapping("/create")
     @Operation(summary = "创建联系人")
     @PreAuthorize("@ss.hasPermission('consulting:client-contact:create')")
@@ -34,6 +37,7 @@ public class ConsultingClientContactController {
         return success(contactService.createContact(createReqVO));
     }
 
+    @ApiAccessLog(operateType = UPDATE)
     @PutMapping("/update")
     @Operation(summary = "更新联系人")
     @PreAuthorize("@ss.hasPermission('consulting:client-contact:update')")
@@ -42,6 +46,7 @@ public class ConsultingClientContactController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = DELETE)
     @DeleteMapping("/delete")
     @Operation(summary = "删除联系人")
     @Parameter(name = "id", description = "编号", required = true)
@@ -51,6 +56,7 @@ public class ConsultingClientContactController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/get")
     @Operation(summary = "获得联系人")
     @Parameter(name = "id", description = "编号", required = true, example = "1")
@@ -60,6 +66,7 @@ public class ConsultingClientContactController {
         return success(ConsultingClientContactConvert.INSTANCE.convert(contact));
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/page")
     @Operation(summary = "获得联系人分页")
     @PreAuthorize("@ss.hasPermission('consulting:client-contact:query')")

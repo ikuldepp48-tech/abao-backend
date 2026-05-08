@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
+
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 
 /**
  * 咨询模块 - 健康检查
@@ -18,6 +21,7 @@ import java.util.Map;
 @RequestMapping("/consulting")
 public class HealthController {
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/ping")
     @Operation(summary = "健康检查")
     public CommonResult<Map<String, Object>> ping() {

@@ -13,6 +13,8 @@ import jakarta.annotation.Resource;
 import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - 咨询师工作台")
 @RestController
@@ -23,6 +25,7 @@ public class DashboardController {
     @Resource
     private DashboardService dashboardService;
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/summary")
     @Operation(summary = "获取工作台摘要统计")
     @PreAuthorize("@ss.hasPermission('consulting:client:query')")
@@ -30,6 +33,7 @@ public class DashboardController {
         return success(dashboardService.getSummary());
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/client-ranking")
     @Operation(summary = "获取客户健康度排行")
     @PreAuthorize("@ss.hasPermission('consulting:client:query')")
@@ -37,6 +41,7 @@ public class DashboardController {
         return success(dashboardService.getClientRanking());
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/urgent-todos")
     @Operation(summary = "获取紧急待办列表")
     @PreAuthorize("@ss.hasPermission('consulting:client:query')")
@@ -44,6 +49,7 @@ public class DashboardController {
         return success(dashboardService.getUrgentTodos());
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/week-schedule")
     @Operation(summary = "获取本周日程时间线")
     @PreAuthorize("@ss.hasPermission('consulting:client:query')")
@@ -51,6 +57,7 @@ public class DashboardController {
         return success(dashboardService.getWeekSchedule());
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/client-panorama")
     @Operation(summary = "获取客户全景视图（所有客户含健康度）")
     @PreAuthorize("@ss.hasPermission('consulting:client:query')")

@@ -15,6 +15,8 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - 打印机管理")
 @RestController
@@ -25,6 +27,7 @@ public class RestaurantPrinterController {
     @Resource
     private RestaurantPrinterService printerService;
 
+    @ApiAccessLog(operateType = CREATE)
     @PostMapping("/create")
     @Operation(summary = "创建打印机")
     @PreAuthorize("@ss.hasPermission('restaurant:printer:create')")
@@ -32,6 +35,7 @@ public class RestaurantPrinterController {
         return success(printerService.createPrinter(reqVO));
     }
 
+    @ApiAccessLog(operateType = UPDATE)
     @PutMapping("/update")
     @Operation(summary = "更新打印机")
     @PreAuthorize("@ss.hasPermission('restaurant:printer:update')")
@@ -40,6 +44,7 @@ public class RestaurantPrinterController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = DELETE)
     @DeleteMapping("/delete")
     @Operation(summary = "删除打印机")
     @PreAuthorize("@ss.hasPermission('restaurant:printer:delete')")
@@ -48,6 +53,7 @@ public class RestaurantPrinterController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/get")
     @Operation(summary = "获取打印机详情")
     @PreAuthorize("@ss.hasPermission('restaurant:printer:query')")
@@ -55,6 +61,7 @@ public class RestaurantPrinterController {
         return success(printerService.getPrinter(id));
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/page")
     @Operation(summary = "获取打印机分页")
     @PreAuthorize("@ss.hasPermission('restaurant:printer:query')")

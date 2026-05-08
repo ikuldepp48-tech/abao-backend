@@ -17,6 +17,8 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - 订单管理")
 @RestController
@@ -27,6 +29,7 @@ public class AdminRestaurantOrderController {
     @Resource
     private RestaurantOrderService orderService;
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/admin/page")
     @Operation(summary = "订单分页")
     @PreAuthorize("@ss.hasPermission('restaurant:order:query')")
@@ -34,6 +37,7 @@ public class AdminRestaurantOrderController {
         return success(orderService.getOrderPage(pageVO));
     }
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/admin/get")
     @Operation(summary = "订单详情")
     @Parameter(name = "id", description = "订单ID", required = true)

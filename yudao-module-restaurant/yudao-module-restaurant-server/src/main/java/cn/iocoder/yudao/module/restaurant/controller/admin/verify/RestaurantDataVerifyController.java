@@ -12,6 +12,8 @@ import jakarta.annotation.Resource;
 import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - 数据校验")
 @RestController
@@ -22,6 +24,7 @@ public class RestaurantDataVerifyController {
     @Resource
     private RestaurantDataVerifyService verifyService;
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/all")
     @Operation(summary = "校验全部数据")
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")

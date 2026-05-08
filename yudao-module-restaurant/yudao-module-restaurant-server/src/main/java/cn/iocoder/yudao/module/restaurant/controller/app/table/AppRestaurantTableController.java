@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "顾客端 - 桌台扫码")
 @RestController
@@ -25,6 +27,7 @@ public class AppRestaurantTableController {
     @Resource
     private RestaurantTableService tableService;
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/scan")
     @Operation(summary = "扫码识别桌台（加密 token）")
     @Parameter(name = "token", description = "二维码中的加密token", required = true)

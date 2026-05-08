@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 
 @Tag(name = "管理后台 - KDS 厨房显示")
 @RestController
@@ -24,6 +26,7 @@ public class KdsController {
     @Resource
     private KdsService kdsService;
 
+    @ApiAccessLog(operateType = GET)
     @GetMapping("/order-list")
     @Operation(summary = "获取档口订单列表")
     @PermitAll
@@ -31,6 +34,7 @@ public class KdsController {
         return success(kdsService.getStationOrderItems(stationId));
     }
 
+    @ApiAccessLog(operateType = UPDATE)
     @PutMapping("/start")
     @Operation(summary = "开始制作")
     @PermitAll
@@ -39,6 +43,7 @@ public class KdsController {
         return success(true);
     }
 
+    @ApiAccessLog(operateType = UPDATE)
     @PutMapping("/finish")
     @Operation(summary = "完成出餐")
     @PermitAll
