@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.restaurant.controller.admin.brand;
 
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.restaurant.controller.admin.brand.vo.RestaurantBrandCreateReqVO;
@@ -21,6 +22,7 @@ import jakarta.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 餐饮品牌")
@@ -34,6 +36,7 @@ public class RestaurantBrandController {
 
     @PostMapping("/create")
     @Operation(summary = "创建餐饮品牌")
+    @ApiAccessLog(operateType = CREATE)
     @PreAuthorize("@ss.hasPermission('restaurant:brand:create')")
     public CommonResult<Long> createBrand(@Valid @RequestBody RestaurantBrandCreateReqVO createReqVO) {
         return success(brandService.createBrand(createReqVO));
@@ -41,6 +44,7 @@ public class RestaurantBrandController {
 
     @PutMapping("/update")
     @Operation(summary = "更新餐饮品牌")
+    @ApiAccessLog(operateType = UPDATE)
     @PreAuthorize("@ss.hasPermission('restaurant:brand:update')")
     public CommonResult<Boolean> updateBrand(@Valid @RequestBody RestaurantBrandUpdateReqVO updateReqVO) {
         brandService.updateBrand(updateReqVO);
@@ -50,6 +54,7 @@ public class RestaurantBrandController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除餐饮品牌")
     @Parameter(name = "id", description = "编号", required = true)
+    @ApiAccessLog(operateType = DELETE)
     @PreAuthorize("@ss.hasPermission('restaurant:brand:delete')")
     public CommonResult<Boolean> deleteBrand(@RequestParam("id") Long id) {
         brandService.deleteBrand(id);
@@ -59,6 +64,7 @@ public class RestaurantBrandController {
     @GetMapping("/get")
     @Operation(summary = "获得餐饮品牌")
     @Parameter(name = "id", description = "编号", required = true, example = "1")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:brand:query')")
     public CommonResult<RestaurantBrandRespVO> getBrand(@RequestParam("id") Long id) {
         RestaurantBrandDO brand = brandService.getBrand(id);
@@ -67,6 +73,7 @@ public class RestaurantBrandController {
 
     @GetMapping("/list-all-simple")
     @Operation(summary = "获取餐饮品牌精简信息列表", description = "主要用于前端的下拉选项")
+    @ApiAccessLog(operateType = GET)
     public CommonResult<List<RestaurantBrandRespVO>> getSimpleBrandList() {
         List<RestaurantBrandDO> list = brandService.getBrandList();
         return success(RestaurantBrandConvert.INSTANCE.convertList(list));
@@ -75,6 +82,7 @@ public class RestaurantBrandController {
     @GetMapping("/list")
     @Operation(summary = "获得餐饮品牌列表")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1,2")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:brand:query')")
     public CommonResult<List<RestaurantBrandRespVO>> getBrandList(@RequestParam("ids") Collection<Long> ids) {
         List<RestaurantBrandDO> list = brandService.getBrandList(ids);
@@ -83,6 +91,7 @@ public class RestaurantBrandController {
 
     @GetMapping("/page")
     @Operation(summary = "获得餐饮品牌分页")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:brand:query')")
     public CommonResult<PageResult<RestaurantBrandRespVO>> getBrandPage(@Valid RestaurantBrandPageReqVO pageVO) {
         PageResult<RestaurantBrandDO> pageResult = brandService.getBrandPage(pageVO);

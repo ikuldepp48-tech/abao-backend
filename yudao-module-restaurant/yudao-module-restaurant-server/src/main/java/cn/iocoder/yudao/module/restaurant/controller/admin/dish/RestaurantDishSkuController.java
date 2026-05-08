@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.restaurant.controller.admin.dish;
 
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.*;
@@ -17,6 +18,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import java.util.List;
 
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 菜品SKU")
@@ -30,6 +32,7 @@ public class RestaurantDishSkuController {
 
     @PostMapping("/create")
     @Operation(summary = "创建菜品SKU")
+    @ApiAccessLog(operateType = CREATE)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:create')")
     public CommonResult<Long> createSku(@Valid @RequestBody RestaurantDishSkuCreateReqVO createReqVO) {
         return success(skuService.createSku(createReqVO));
@@ -37,6 +40,7 @@ public class RestaurantDishSkuController {
 
     @PutMapping("/update")
     @Operation(summary = "更新菜品SKU")
+    @ApiAccessLog(operateType = UPDATE)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:update')")
     public CommonResult<Boolean> updateSku(@Valid @RequestBody RestaurantDishSkuUpdateReqVO updateReqVO) {
         skuService.updateSku(updateReqVO);
@@ -46,6 +50,7 @@ public class RestaurantDishSkuController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除菜品SKU")
     @Parameter(name = "id", description = "编号", required = true)
+    @ApiAccessLog(operateType = DELETE)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:delete')")
     public CommonResult<Boolean> deleteSku(@RequestParam("id") Long id) {
         skuService.deleteSku(id);
@@ -55,6 +60,7 @@ public class RestaurantDishSkuController {
     @GetMapping("/get")
     @Operation(summary = "获得菜品SKU")
     @Parameter(name = "id", description = "编号", required = true, example = "1")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
     public CommonResult<RestaurantDishSkuRespVO> getSku(@RequestParam("id") Long id) {
         RestaurantDishSkuDO sku = skuService.getSku(id);
@@ -64,6 +70,7 @@ public class RestaurantDishSkuController {
     @GetMapping("/list-by-spu")
     @Operation(summary = "根据SPU获取SKU列表")
     @Parameter(name = "spuId", description = "SPU编号", required = true)
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
     public CommonResult<List<RestaurantDishSkuRespVO>> getSkuListBySpuId(@RequestParam("spuId") Long spuId) {
         List<RestaurantDishSkuDO> list = skuService.getSkuListBySpuId(spuId);
@@ -72,6 +79,7 @@ public class RestaurantDishSkuController {
 
     @GetMapping("/page")
     @Operation(summary = "获得菜品SKU分页")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
     public CommonResult<PageResult<RestaurantDishSkuRespVO>> getSkuPage(@Valid RestaurantDishSkuPageReqVO pageVO) {
         PageResult<RestaurantDishSkuDO> pageResult = skuService.getSkuPage(pageVO);

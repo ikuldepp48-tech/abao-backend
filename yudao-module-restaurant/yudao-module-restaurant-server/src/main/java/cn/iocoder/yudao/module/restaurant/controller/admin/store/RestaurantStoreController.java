@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.restaurant.controller.admin.store;
 
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.restaurant.controller.admin.store.vo.RestaurantStoreCreateReqVO;
@@ -21,6 +22,7 @@ import jakarta.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 门店")
@@ -34,6 +36,7 @@ public class RestaurantStoreController {
 
     @PostMapping("/create")
     @Operation(summary = "创建门店")
+    @ApiAccessLog(operateType = CREATE)
     @PreAuthorize("@ss.hasPermission('restaurant:store:create')")
     public CommonResult<Long> createStore(@Valid @RequestBody RestaurantStoreCreateReqVO createReqVO) {
         return success(storeService.createStore(createReqVO));
@@ -41,6 +44,7 @@ public class RestaurantStoreController {
 
     @PutMapping("/update")
     @Operation(summary = "更新门店")
+    @ApiAccessLog(operateType = UPDATE)
     @PreAuthorize("@ss.hasPermission('restaurant:store:update')")
     public CommonResult<Boolean> updateStore(@Valid @RequestBody RestaurantStoreUpdateReqVO updateReqVO) {
         storeService.updateStore(updateReqVO);
@@ -50,6 +54,7 @@ public class RestaurantStoreController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除门店")
     @Parameter(name = "id", description = "编号", required = true)
+    @ApiAccessLog(operateType = DELETE)
     @PreAuthorize("@ss.hasPermission('restaurant:store:delete')")
     public CommonResult<Boolean> deleteStore(@RequestParam("id") Long id) {
         storeService.deleteStore(id);
@@ -59,6 +64,7 @@ public class RestaurantStoreController {
     @GetMapping("/get")
     @Operation(summary = "获得门店")
     @Parameter(name = "id", description = "编号", required = true, example = "1")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:store:query')")
     public CommonResult<RestaurantStoreRespVO> getStore(@RequestParam("id") Long id) {
         RestaurantStoreDO store = storeService.getStore(id);
@@ -67,6 +73,7 @@ public class RestaurantStoreController {
 
     @GetMapping("/list-all-simple")
     @Operation(summary = "获取门店精简信息列表", description = "主要用于前端的下拉选项")
+    @ApiAccessLog(operateType = GET)
     public CommonResult<List<RestaurantStoreRespVO>> getSimpleStoreList() {
         List<RestaurantStoreDO> list = storeService.getStoreList();
         return success(RestaurantStoreConvert.INSTANCE.convertList(list));
@@ -75,6 +82,7 @@ public class RestaurantStoreController {
     @GetMapping("/list")
     @Operation(summary = "获得门店列表")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1,2")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:store:query')")
     public CommonResult<List<RestaurantStoreRespVO>> getStoreList(@RequestParam("ids") Collection<Long> ids) {
         List<RestaurantStoreDO> list = storeService.getStoreList(ids);
@@ -83,6 +91,7 @@ public class RestaurantStoreController {
 
     @GetMapping("/page")
     @Operation(summary = "获得门店分页")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:store:query')")
     public CommonResult<PageResult<RestaurantStoreRespVO>> getStorePage(@Valid RestaurantStorePageReqVO pageVO) {
         PageResult<RestaurantStoreDO> pageResult = storeService.getStorePage(pageVO);

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.restaurant.controller.admin.dish;
 
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.restaurant.controller.admin.dish.vo.RestaurantDishSpuCreateReqVO;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 菜品管理")
@@ -42,6 +44,7 @@ public class RestaurantDishSpuController {
 
     @PostMapping("/create")
     @Operation(summary = "创建菜品")
+    @ApiAccessLog(operateType = CREATE)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:create')")
     public CommonResult<Long> createDishSpu(@Valid @RequestBody RestaurantDishSpuCreateReqVO createReqVO) {
         return success(dishSpuService.createDishSpu(createReqVO));
@@ -49,6 +52,7 @@ public class RestaurantDishSpuController {
 
     @PutMapping("/update")
     @Operation(summary = "更新菜品")
+    @ApiAccessLog(operateType = UPDATE)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:update')")
     public CommonResult<Boolean> updateDishSpu(@Valid @RequestBody RestaurantDishSpuUpdateReqVO updateReqVO) {
         dishSpuService.updateDishSpu(updateReqVO);
@@ -58,6 +62,7 @@ public class RestaurantDishSpuController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除菜品")
     @Parameter(name = "id", description = "编号", required = true)
+    @ApiAccessLog(operateType = DELETE)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:delete')")
     public CommonResult<Boolean> deleteDishSpu(@RequestParam("id") Long id) {
         dishSpuService.deleteDishSpu(id);
@@ -67,6 +72,7 @@ public class RestaurantDishSpuController {
     @GetMapping("/get")
     @Operation(summary = "获得菜品")
     @Parameter(name = "id", description = "编号", required = true, example = "1")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
     public CommonResult<RestaurantDishSpuRespVO> getDishSpu(@RequestParam("id") Long id) {
         RestaurantDishSpuDO dish = dishSpuService.getDishSpu(id);
@@ -81,6 +87,7 @@ public class RestaurantDishSpuController {
 
     @GetMapping("/list-all-simple")
     @Operation(summary = "获取菜品精简信息列表", description = "主要用于前端的下拉选项")
+    @ApiAccessLog(operateType = GET)
     public CommonResult<List<RestaurantDishSpuRespVO>> getSimpleDishSpuList() {
         List<RestaurantDishSpuDO> list = dishSpuService.getDishSpuList();
         return success(RestaurantDishSpuConvert.INSTANCE.convertList(list));
@@ -89,6 +96,7 @@ public class RestaurantDishSpuController {
     @GetMapping("/list")
     @Operation(summary = "获得菜品列表")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1,2")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
     public CommonResult<List<RestaurantDishSpuRespVO>> getDishSpuList(@RequestParam("ids") Collection<Long> ids) {
         List<RestaurantDishSpuDO> list = dishSpuService.getDishSpuList(ids);
@@ -97,6 +105,7 @@ public class RestaurantDishSpuController {
 
     @GetMapping("/page")
     @Operation(summary = "获得菜品分页")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:dish:query')")
     public CommonResult<PageResult<RestaurantDishSpuRespVO>> getDishSpuPage(@Valid RestaurantDishSpuPageReqVO pageVO) {
         PageResult<RestaurantDishSpuDO> pageResult = dishSpuService.getDishSpuPage(pageVO);

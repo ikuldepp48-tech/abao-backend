@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.restaurant.controller.admin.kitchen;
 
+import cn.iocoder.yudao.framework.apilog.core.annotation.ApiAccessLog;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.restaurant.controller.admin.kitchen.vo.RestaurantKitchenStationSaveReqVO;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 
+import static cn.iocoder.yudao.framework.apilog.core.enums.OperateTypeEnum.*;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 厨房档口")
@@ -27,6 +29,7 @@ public class RestaurantKitchenStationController {
 
     @PostMapping("/create")
     @Operation(summary = "创建档口")
+    @ApiAccessLog(operateType = CREATE)
     @PreAuthorize("@ss.hasPermission('restaurant:kitchen-station:create')")
     public CommonResult<Long> createStation(@Valid @RequestBody RestaurantKitchenStationSaveReqVO reqVO) {
         return success(stationService.createStation(reqVO));
@@ -34,6 +37,7 @@ public class RestaurantKitchenStationController {
 
     @PutMapping("/update")
     @Operation(summary = "更新档口")
+    @ApiAccessLog(operateType = UPDATE)
     @PreAuthorize("@ss.hasPermission('restaurant:kitchen-station:update')")
     public CommonResult<Boolean> updateStation(@Valid @RequestBody RestaurantKitchenStationSaveReqVO reqVO) {
         stationService.updateStation(reqVO);
@@ -42,6 +46,7 @@ public class RestaurantKitchenStationController {
 
     @DeleteMapping("/delete")
     @Operation(summary = "删除档口")
+    @ApiAccessLog(operateType = DELETE)
     @PreAuthorize("@ss.hasPermission('restaurant:kitchen-station:delete')")
     public CommonResult<Boolean> deleteStation(@RequestParam("id") Long id) {
         stationService.deleteStation(id);
@@ -50,6 +55,7 @@ public class RestaurantKitchenStationController {
 
     @GetMapping("/get")
     @Operation(summary = "获取档口详情")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:kitchen-station:query')")
     public CommonResult<RestaurantKitchenStationDO> getStation(@RequestParam("id") Long id) {
         return success(stationService.getStation(id));
@@ -57,6 +63,7 @@ public class RestaurantKitchenStationController {
 
     @GetMapping("/page")
     @Operation(summary = "获取档口分页")
+    @ApiAccessLog(operateType = GET)
     @PreAuthorize("@ss.hasPermission('restaurant:kitchen-station:query')")
     public CommonResult<PageResult<RestaurantKitchenStationDO>> getStationPage(@RequestParam(defaultValue = "1") Integer pageNo,
                                                                                @RequestParam(defaultValue = "10") Integer pageSize) {
