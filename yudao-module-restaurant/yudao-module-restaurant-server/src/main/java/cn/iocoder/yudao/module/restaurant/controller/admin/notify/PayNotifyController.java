@@ -31,7 +31,8 @@ public class PayNotifyController {
 
     @ApiAccessLog(operateType = UPDATE)
     @LogRecord(type = ORDER_TYPE, subType = ORDER_PAY_SUCCESS_SUB_TYPE, bizNo = "{{#reqDTO.merchantOrderId}}",
-            success = ORDER_PAY_SUCCESS)
+            success = ORDER_PAY_SUCCESS,
+            extra = "{\"orderNo\":\"{{#reqDTO.merchantOrderId}}\",\"payOrderId\":\"{{#reqDTO.payOrderId}}\"}")
     @PostMapping("/pay-success")
     @Operation(summary = "支付成功回调")
     @PermitAll

@@ -18,7 +18,10 @@ import java.util.stream.Collectors;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.STORE_DISH_NOT_AVAILABLE;
 
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.transaction.annotation.Transactional;
+
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 @Service
 @Validated
@@ -85,6 +88,8 @@ public class RestaurantStoreDishServiceImpl implements RestaurantStoreDishServic
     }
 
     @Override
+    @LogRecord(type = STORE_DISH_TYPE, subType = STORE_DISH_SOLD_OUT_SUB_TYPE, bizNo = "{{#ids.size()}}",
+            success = STORE_DISH_SOLD_OUT_SUCCESS)
     public int batchSoldOut(List<Long> ids) {
         Set<Long> storeIds = new java.util.HashSet<>();
         int count = 0;
@@ -102,6 +107,8 @@ public class RestaurantStoreDishServiceImpl implements RestaurantStoreDishServic
     }
 
     @Override
+    @LogRecord(type = STORE_DISH_TYPE, subType = STORE_DISH_RESTORE_SUB_TYPE, bizNo = "{{#ids.size()}}",
+            success = STORE_DISH_RESTORE_SUCCESS)
     public int batchRestore(List<Long> ids) {
         Set<Long> storeIds = new java.util.HashSet<>();
         int count = 0;
@@ -120,6 +127,8 @@ public class RestaurantStoreDishServiceImpl implements RestaurantStoreDishServic
     }
 
     @Override
+    @LogRecord(type = STORE_DISH_TYPE, subType = STORE_DISH_PRICE_OVERRIDE_SUB_TYPE, bizNo = "{{#id}}",
+            success = STORE_DISH_PRICE_OVERRIDE_SUCCESS)
     public int overridePrice(Long id, java.math.BigDecimal price) {
         RestaurantStoreDishDO sd = storeDishMapper.selectById(id);
         if (sd == null) {
@@ -144,6 +153,8 @@ public class RestaurantStoreDishServiceImpl implements RestaurantStoreDishServic
     }
 
     @Override
+    @LogRecord(type = STORE_DISH_TYPE, subType = STORE_DISH_STATUS_SUB_TYPE, bizNo = "{{#ids.size()}}",
+            success = STORE_DISH_STATUS_SUCCESS)
     public int batchUpdateStatus(List<Long> ids, Integer status) {
         Set<Long> storeIds = new java.util.HashSet<>();
         int count = 0;

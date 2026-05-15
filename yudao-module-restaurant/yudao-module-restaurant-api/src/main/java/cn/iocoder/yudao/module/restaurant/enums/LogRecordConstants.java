@@ -36,4 +36,32 @@ public interface LogRecordConstants {
     String DISH_DELETE_SUB_TYPE = "删除菜品";
     String DISH_DELETE_SUCCESS = "删除了菜品【ID:{{#id}}】";
 
+    // ======================= SKU 菜品SKU =======================
+
+    String SKU_TYPE = "菜品SKU";
+    String SKU_CREATE_SUB_TYPE = "创建SKU";
+    String SKU_CREATE_SUCCESS = "创建SKU【{{#createReqVO.name}}】，售价 ¥{{#createReqVO.price}}，会员价 ¥{{#createReqVO.memberPrice}}，成本价 ¥{{#createReqVO.costPrice}}";
+    String SKU_UPDATE_SUB_TYPE = "更新SKU";
+    String SKU_UPDATE_SUCCESS = "更新SKU【{{#updateReqVO.name}}】: {_DIFF{#updateReqVO}}";
+
+    // ======================= STORE_DISH 门店菜品 =======================
+
+    String STORE_DISH_TYPE = "门店菜品";
+    String STORE_DISH_SOLD_OUT_SUB_TYPE = "一键沽清";
+    String STORE_DISH_SOLD_OUT_SUCCESS = "一键沽清完成";
+    String STORE_DISH_RESTORE_SUB_TYPE = "批量恢复";
+    String STORE_DISH_RESTORE_SUCCESS = "批量恢复供应完成";
+    String STORE_DISH_STATUS_SUB_TYPE = "批量上下架";
+    String STORE_DISH_STATUS_SUCCESS = "批量更新上下架状态完成";
+    String STORE_DISH_PRICE_OVERRIDE_SUB_TYPE = "覆盖价格";
+    String STORE_DISH_PRICE_OVERRIDE_SUCCESS = "覆盖菜品价格，菜品ID={{#id}}，新价格 ¥{{#price}}";
+
+    // ======================= KDS 厨房显示系统 =======================
+
+    String KDS_TYPE = "KDS";
+    String KDS_START_SUB_TYPE = "开始制作";
+    String KDS_START_SUCCESS = "订单项【{{#itemId}}】开始制作";
+    String KDS_FINISH_SUB_TYPE = "完成出餐";
+    String KDS_FINISH_SUCCESS = "订单项【{{#itemId}}】完成出餐";
+
 }

@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderItemMap
 import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderLogMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.order.RestaurantOrderMapper;
 import cn.iocoder.yudao.module.restaurant.service.kitchen.KdsPushService;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 @Slf4j
 @Service
@@ -77,6 +79,8 @@ public class KdsServiceImpl implements KdsService {
     }
 
     @Override
+    @LogRecord(type = KDS_TYPE, subType = KDS_START_SUB_TYPE, bizNo = "{{#itemId}}",
+            success = KDS_START_SUCCESS)
     @Transactional(rollbackFor = Exception.class)
     public void startItem(Long itemId) {
         RestaurantOrderItemDO item = orderItemMapper.selectById(itemId);
@@ -112,6 +116,8 @@ public class KdsServiceImpl implements KdsService {
     }
 
     @Override
+    @LogRecord(type = KDS_TYPE, subType = KDS_FINISH_SUB_TYPE, bizNo = "{{#itemId}}",
+            success = KDS_FINISH_SUCCESS)
     @Transactional(rollbackFor = Exception.class)
     public void finishItem(Long itemId) {
         RestaurantOrderItemDO item = orderItemMapper.selectById(itemId);

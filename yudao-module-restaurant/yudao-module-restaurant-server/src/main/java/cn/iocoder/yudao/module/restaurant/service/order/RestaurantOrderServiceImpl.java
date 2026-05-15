@@ -71,7 +71,8 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
     @Override
     @LogRecord(type = ORDER_TYPE, subType = ORDER_CREATE_SUB_TYPE, bizNo = "{{#order.orderNo}}",
-            success = ORDER_CREATE_SUCCESS)
+            success = ORDER_CREATE_SUCCESS,
+            extra = "{\"originalAmount\":\"{{#order.originalAmount}}\",\"discountAmount\":\"{{#order.discountAmount}}\",\"payAmount\":\"{{#order.payAmount}}\"}")
     @Transactional
     public AppOrderRespVO createOrder(Long memberId, String userIp, AppOrderCreateReqVO reqVO) {
         // 幂等性检查：同一 clientOrderNo + memberId 不重复创建
@@ -218,7 +219,8 @@ public class RestaurantOrderServiceImpl implements RestaurantOrderService {
 
     @Override
     @LogRecord(type = ORDER_TYPE, subType = ORDER_CANCEL_SUB_TYPE, bizNo = "{{#orderId}}",
-            success = ORDER_CANCEL_SUCCESS)
+            success = ORDER_CANCEL_SUCCESS,
+            extra = "{\"orderId\":\"{{#orderId}}\",\"memberId\":\"{{#memberId}}\",\"action\":\"顾客取消订单\"}")
     @Transactional(rollbackFor = Exception.class)
     public void cancelOrder(Long orderId, Long memberId) {
         RestaurantOrderDO order = orderMapper.selectById(orderId);
