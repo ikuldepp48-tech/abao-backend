@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.restaurant.controller.admin.store.vo.RestaurantSt
 import cn.iocoder.yudao.module.restaurant.convert.store.RestaurantStoreConvert;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.store.RestaurantStoreDO;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.store.RestaurantStoreMapper;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -19,6 +20,7 @@ import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,8 @@ public class RestaurantStoreServiceImpl implements RestaurantStoreService {
     private RestaurantStoreMapper restaurantStoreMapper;
 
     @Override
+    @LogRecord(type = STORE_TYPE, subType = STORE_CREATE_SUB_TYPE, bizNo = "{{#createReqVO.brandId}}",
+            success = STORE_CREATE_SUCCESS)
     public Long createStore(RestaurantStoreCreateReqVO createReqVO) {
         validateStoreNameUnique(null, createReqVO.getName());
         validateStoreCodeUnique(null, createReqVO.getCode());
@@ -40,6 +44,8 @@ public class RestaurantStoreServiceImpl implements RestaurantStoreService {
     }
 
     @Override
+    @LogRecord(type = STORE_TYPE, subType = STORE_UPDATE_SUB_TYPE, bizNo = "{{#updateReqVO.id}}",
+            success = STORE_UPDATE_SUCCESS)
     public void updateStore(RestaurantStoreUpdateReqVO updateReqVO) {
         validateStoreExists(updateReqVO.getId());
         validateStoreNameUnique(updateReqVO.getId(), updateReqVO.getName());
@@ -49,6 +55,8 @@ public class RestaurantStoreServiceImpl implements RestaurantStoreService {
     }
 
     @Override
+    @LogRecord(type = STORE_TYPE, subType = STORE_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = STORE_DELETE_SUCCESS)
     public void deleteStore(Long id) {
         validateStoreExists(id);
         restaurantStoreMapper.deleteById(id);

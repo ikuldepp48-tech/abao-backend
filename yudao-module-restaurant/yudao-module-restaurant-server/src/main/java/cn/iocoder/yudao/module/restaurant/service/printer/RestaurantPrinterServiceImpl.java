@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.restaurant.controller.admin.printer.vo.RestaurantPrinterSaveReqVO;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.printer.RestaurantPrinterDO;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.printer.RestaurantPrinterMapper;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
@@ -13,6 +14,7 @@ import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,8 @@ public class RestaurantPrinterServiceImpl implements RestaurantPrinterService {
     private RestaurantPrinterMapper printerMapper;
 
     @Override
+    @LogRecord(type = PRINTER_TYPE, subType = PRINTER_CREATE_SUB_TYPE, bizNo = "{{#reqVO.storeId}}",
+            success = PRINTER_CREATE_SUCCESS)
     public Long createPrinter(RestaurantPrinterSaveReqVO reqVO) {
         RestaurantPrinterDO printer = RestaurantPrinterDO.builder()
                 .name(reqVO.getName())
@@ -39,6 +43,8 @@ public class RestaurantPrinterServiceImpl implements RestaurantPrinterService {
     }
 
     @Override
+    @LogRecord(type = PRINTER_TYPE, subType = PRINTER_UPDATE_SUB_TYPE, bizNo = "{{#reqVO.id}}",
+            success = PRINTER_UPDATE_SUCCESS)
     public void updatePrinter(RestaurantPrinterSaveReqVO reqVO) {
         RestaurantPrinterDO printer = printerMapper.selectById(reqVO.getId());
         if (printer == null) {
@@ -55,6 +61,8 @@ public class RestaurantPrinterServiceImpl implements RestaurantPrinterService {
     }
 
     @Override
+    @LogRecord(type = PRINTER_TYPE, subType = PRINTER_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = PRINTER_DELETE_SUCCESS)
     public void deletePrinter(Long id) {
         printerMapper.deleteById(id);
     }

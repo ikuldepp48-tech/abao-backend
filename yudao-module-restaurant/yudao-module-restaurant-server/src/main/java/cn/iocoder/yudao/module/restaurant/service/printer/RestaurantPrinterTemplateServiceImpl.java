@@ -4,9 +4,12 @@ import cn.iocoder.yudao.module.restaurant.controller.admin.printer.template.vo.R
 import cn.iocoder.yudao.module.restaurant.controller.admin.printer.template.vo.RestaurantPrinterTemplateSaveReqVO;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.printer.RestaurantPrinterTemplateDO;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.printer.RestaurantPrinterTemplateMapper;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 @Service
 public class RestaurantPrinterTemplateServiceImpl implements RestaurantPrinterTemplateService {
@@ -24,6 +27,8 @@ public class RestaurantPrinterTemplateServiceImpl implements RestaurantPrinterTe
     }
 
     @Override
+    @LogRecord(type = PRINTER_TEMPLATE_TYPE, subType = PRINTER_TEMPLATE_SAVE_SUB_TYPE, bizNo = "0",
+            success = PRINTER_TEMPLATE_SAVE_SUCCESS)
     public void saveTemplate(RestaurantPrinterTemplateSaveReqVO reqVO) {
         RestaurantPrinterTemplateDO existing = templateMapper.selectByPrinterId(reqVO.getPrinterId());
         if (existing != null) {

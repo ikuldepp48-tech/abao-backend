@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.restaurant.controller.admin.kitchen.vo.RestaurantKitchenStationSaveReqVO;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.kitchen.RestaurantKitchenStationDO;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.kitchen.RestaurantKitchenStationMapper;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,8 @@ public class RestaurantKitchenStationServiceImpl implements RestaurantKitchenSta
     private RestaurantKitchenStationMapper stationMapper;
 
     @Override
+    @LogRecord(type = KITCHEN_STATION_TYPE, subType = KITCHEN_STATION_CREATE_SUB_TYPE, bizNo = "0",
+            success = KITCHEN_STATION_CREATE_SUCCESS)
     public Long createStation(RestaurantKitchenStationSaveReqVO reqVO) {
         RestaurantKitchenStationDO station = RestaurantKitchenStationDO.builder()
                 .name(reqVO.getName())
@@ -37,6 +41,8 @@ public class RestaurantKitchenStationServiceImpl implements RestaurantKitchenSta
     }
 
     @Override
+    @LogRecord(type = KITCHEN_STATION_TYPE, subType = KITCHEN_STATION_UPDATE_SUB_TYPE, bizNo = "{{#reqVO.id}}",
+            success = KITCHEN_STATION_UPDATE_SUCCESS)
     public void updateStation(RestaurantKitchenStationSaveReqVO reqVO) {
         RestaurantKitchenStationDO station = stationMapper.selectById(reqVO.getId());
         if (station == null) {
@@ -50,6 +56,8 @@ public class RestaurantKitchenStationServiceImpl implements RestaurantKitchenSta
     }
 
     @Override
+    @LogRecord(type = KITCHEN_STATION_TYPE, subType = KITCHEN_STATION_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = KITCHEN_STATION_DELETE_SUCCESS)
     public void deleteStation(Long id) {
         stationMapper.deleteById(id);
     }

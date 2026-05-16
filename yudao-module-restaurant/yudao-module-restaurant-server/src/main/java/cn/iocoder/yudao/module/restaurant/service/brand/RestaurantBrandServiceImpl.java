@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.restaurant.controller.admin.brand.vo.RestaurantBr
 import cn.iocoder.yudao.module.restaurant.convert.brand.RestaurantBrandConvert;
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.brand.RestaurantBrandDO;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.brand.RestaurantBrandMapper;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -21,6 +22,7 @@ import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionU
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.BRAND_NOT_EXISTS;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.BRAND_NAME_EXISTS;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.BRAND_CODE_EXISTS;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,8 @@ public class RestaurantBrandServiceImpl implements RestaurantBrandService {
     private RestaurantBrandMapper restaurantBrandMapper;
 
     @Override
+    @LogRecord(type = BRAND_TYPE, subType = BRAND_CREATE_SUB_TYPE, bizNo = "0",
+            success = BRAND_CREATE_SUCCESS)
     public Long createBrand(RestaurantBrandCreateReqVO createReqVO) {
         validateBrandNameUnique(null, createReqVO.getName());
         validateBrandCodeUnique(null, createReqVO.getCode());
@@ -42,6 +46,8 @@ public class RestaurantBrandServiceImpl implements RestaurantBrandService {
     }
 
     @Override
+    @LogRecord(type = BRAND_TYPE, subType = BRAND_UPDATE_SUB_TYPE, bizNo = "{{#updateReqVO.id}}",
+            success = BRAND_UPDATE_SUCCESS)
     public void updateBrand(RestaurantBrandUpdateReqVO updateReqVO) {
         validateBrandExists(updateReqVO.getId());
         validateBrandNameUnique(updateReqVO.getId(), updateReqVO.getName());
@@ -51,6 +57,8 @@ public class RestaurantBrandServiceImpl implements RestaurantBrandService {
     }
 
     @Override
+    @LogRecord(type = BRAND_TYPE, subType = BRAND_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = BRAND_DELETE_SUCCESS)
     public void deleteBrand(Long id) {
         validateBrandExists(id);
         restaurantBrandMapper.deleteById(id);

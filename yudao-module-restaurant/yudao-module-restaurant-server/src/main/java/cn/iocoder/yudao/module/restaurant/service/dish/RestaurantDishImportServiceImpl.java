@@ -12,10 +12,13 @@ import cn.iocoder.yudao.module.restaurant.dal.mysql.addon.RestaurantDishAddonMap
 import cn.iocoder.yudao.module.restaurant.dal.mysql.category.RestaurantCategoryMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.dish.RestaurantDishSpuMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.store.RestaurantStoreMapper;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -43,6 +46,8 @@ public class RestaurantDishImportServiceImpl implements RestaurantDishImportServ
     private RestaurantDishImportRowExecutor rowExecutor;
 
     @Override
+    @LogRecord(type = DISH_IMPORT_TYPE, subType = DISH_IMPORT_SUB_TYPE, bizNo = "0",
+            success = DISH_IMPORT_SUCCESS)
     public RestaurantDishImportResultVO importDishes(MultipartFile file) throws IOException {
         RestaurantDishImportContext ctx = buildContext();
         RestaurantDishImportResultVO result = new RestaurantDishImportResultVO();

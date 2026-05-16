@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.restaurant.dal.dataobject.store.RestaurantStoreDO
 import cn.iocoder.yudao.module.restaurant.dal.dataobject.table.RestaurantTableDO;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.store.RestaurantStoreMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.table.RestaurantTableMapper;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -19,6 +20,7 @@ import java.util.*;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,8 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     private String qrCodeBaseUrl;
 
     @Override
+    @LogRecord(type = TABLE_TYPE, subType = TABLE_CREATE_SUB_TYPE, bizNo = "0",
+            success = TABLE_CREATE_SUCCESS)
     public Long createTable(RestaurantTableCreateReqVO createReqVO) {
         RestaurantTableDO table = RestaurantTableConvert.INSTANCE.convert(createReqVO);
         restaurantTableMapper.insert(table);
@@ -47,6 +51,8 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     }
 
     @Override
+    @LogRecord(type = TABLE_TYPE, subType = TABLE_UPDATE_SUB_TYPE, bizNo = "0",
+            success = TABLE_UPDATE_SUCCESS)
     public void updateTable(RestaurantTableUpdateReqVO updateReqVO) {
         validateTableExists(updateReqVO.getId());
         RestaurantTableDO updateObj = RestaurantTableConvert.INSTANCE.convert(updateReqVO);
@@ -54,12 +60,16 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     }
 
     @Override
+    @LogRecord(type = TABLE_TYPE, subType = TABLE_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = TABLE_DELETE_SUCCESS)
     public void deleteTable(Long id) {
         validateTableExists(id);
         restaurantTableMapper.deleteById(id);
     }
 
     @Override
+    @LogRecord(type = TABLE_TYPE, subType = TABLE_BATCH_CREATE_SUB_TYPE, bizNo = "0",
+            success = TABLE_BATCH_CREATE_SUCCESS)
     public Map<String, Integer> batchCreateTable(RestaurantTableBatchCreateReqVO reqVO) {
         int successCount = 0;
         int skipCount = 0;

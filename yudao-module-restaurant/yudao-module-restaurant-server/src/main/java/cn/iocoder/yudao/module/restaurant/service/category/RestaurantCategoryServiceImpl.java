@@ -12,6 +12,7 @@ import cn.iocoder.yudao.module.restaurant.dal.dataobject.store.RestaurantStoreDO
 import cn.iocoder.yudao.module.restaurant.dal.mysql.category.RestaurantCategoryMapper;
 import cn.iocoder.yudao.module.restaurant.dal.mysql.store.RestaurantStoreMapper;
 import cn.iocoder.yudao.module.restaurant.service.menu.MenuCacheEvictEvent;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,8 @@ public class RestaurantCategoryServiceImpl implements RestaurantCategoryService 
     private ApplicationEventPublisher eventPublisher;
 
     @Override
+    @LogRecord(type = CATEGORY_TYPE, subType = CATEGORY_CREATE_SUB_TYPE, bizNo = "{{#createReqVO.parentId}}",
+            success = CATEGORY_CREATE_SUCCESS)
     public Long createCategory(RestaurantCategoryCreateReqVO createReqVO) {
         RestaurantCategoryDO category = RestaurantCategoryConvert.INSTANCE.convert(createReqVO);
         restaurantCategoryMapper.insert(category);
@@ -52,6 +56,8 @@ public class RestaurantCategoryServiceImpl implements RestaurantCategoryService 
     }
 
     @Override
+    @LogRecord(type = CATEGORY_TYPE, subType = CATEGORY_UPDATE_SUB_TYPE, bizNo = "{{#updateReqVO.id}}",
+            success = CATEGORY_UPDATE_SUCCESS)
     public void updateCategory(RestaurantCategoryUpdateReqVO updateReqVO) {
         validateCategoryExists(updateReqVO.getId());
         RestaurantCategoryDO updateObj = RestaurantCategoryConvert.INSTANCE.convert(updateReqVO);
@@ -63,6 +69,8 @@ public class RestaurantCategoryServiceImpl implements RestaurantCategoryService 
     }
 
     @Override
+    @LogRecord(type = CATEGORY_TYPE, subType = CATEGORY_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = CATEGORY_DELETE_SUCCESS)
     public void deleteCategory(Long id) {
         validateCategoryExists(id);
         // 检查是否存在子分类

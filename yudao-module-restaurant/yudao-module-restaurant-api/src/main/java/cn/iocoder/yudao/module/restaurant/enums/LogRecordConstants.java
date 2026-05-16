@@ -76,4 +76,78 @@ public interface LogRecordConstants {
     String KDS_FINISH_SUB_TYPE = "完成出餐";
     String KDS_FINISH_SUCCESS = "订单项【{{#itemId}}】完成出餐";
 
+    // ======================= BRAND 品牌 =======================
+
+    String BRAND_TYPE = "品牌";
+    String BRAND_CREATE_SUB_TYPE = "创建品牌";
+    String BRAND_CREATE_SUCCESS = "创建品牌【{{#createReqVO.name}}】";
+    String BRAND_UPDATE_SUB_TYPE = "更新品牌";
+    String BRAND_UPDATE_SUCCESS = "更新品牌【{{#updateReqVO.name}}】";
+    String BRAND_DELETE_SUB_TYPE = "删除品牌";
+    String BRAND_DELETE_SUCCESS = "删除品牌【ID:{{#id}}】";
+
+    // ======================= STORE 门店 =======================
+
+    String STORE_TYPE = "门店";
+    String STORE_CREATE_SUB_TYPE = "创建门店";
+    String STORE_CREATE_SUCCESS = "创建门店【{{#createReqVO.name}}】";
+    String STORE_UPDATE_SUB_TYPE = "更新门店";
+    String STORE_UPDATE_SUCCESS = "更新门店【{{#updateReqVO.name}}】";
+    String STORE_DELETE_SUB_TYPE = "删除门店";
+    String STORE_DELETE_SUCCESS = "删除门店【ID:{{#id}}】";
+
+    // ======================= CATEGORY 分类 =======================
+
+    String CATEGORY_TYPE = "分类";
+    String CATEGORY_CREATE_SUB_TYPE = "创建分类";
+    String CATEGORY_CREATE_SUCCESS = "创建分类【{{#createReqVO.name}}】";
+    String CATEGORY_UPDATE_SUB_TYPE = "更新分类";
+    String CATEGORY_UPDATE_SUCCESS = "更新分类【{{#updateReqVO.name}}】";
+    String CATEGORY_DELETE_SUB_TYPE = "删除分类";
+    String CATEGORY_DELETE_SUCCESS = "删除分类【ID:{{#id}}】";
+
+    // ======================= TABLE 桌台 =======================
+
+    String TABLE_TYPE = "桌台";
+    String TABLE_CREATE_SUB_TYPE = "创建桌台";
+    String TABLE_CREATE_SUCCESS = "创建桌台【{{#createReqVO.tableNo}}】";
+    String TABLE_BATCH_CREATE_SUB_TYPE = "批量创建桌台";
+    String TABLE_BATCH_CREATE_SUCCESS = "批量创建桌台【{{#reqVO.prefix}}{{#reqVO.startNo}}-{{#reqVO.endNo}}】";
+    String TABLE_UPDATE_SUB_TYPE = "更新桌台";
+    String TABLE_UPDATE_SUCCESS = "更新桌台【{{#updateReqVO.tableNo}}】";
+    String TABLE_DELETE_SUB_TYPE = "删除桌台";
+    String TABLE_DELETE_SUCCESS = "删除桌台【ID:{{#id}}】";
+
+    // ======================= KITCHEN_STATION 厨房档口 =======================
+
+    String KITCHEN_STATION_TYPE = "厨房档口";
+    String KITCHEN_STATION_CREATE_SUB_TYPE = "创建档口";
+    String KITCHEN_STATION_CREATE_SUCCESS = "创建档口【{{#reqVO.name}}】";
+    String KITCHEN_STATION_UPDATE_SUB_TYPE = "更新档口";
+    String KITCHEN_STATION_UPDATE_SUCCESS = "更新档口【{{#reqVO.name}}】";
+    String KITCHEN_STATION_DELETE_SUB_TYPE = "删除档口";
+    String KITCHEN_STATION_DELETE_SUCCESS = "删除档口【ID:{{#id}}】";
+
+    // ======================= PRINTER 打印机 =======================
+
+    String PRINTER_TYPE = "打印机";
+    String PRINTER_CREATE_SUB_TYPE = "创建打印机";
+    String PRINTER_CREATE_SUCCESS = "创建打印机【{{#reqVO.name}}】";
+    String PRINTER_UPDATE_SUB_TYPE = "更新打印机";
+    String PRINTER_UPDATE_SUCCESS = "更新打印机【{{#reqVO.name}}】";
+    String PRINTER_DELETE_SUB_TYPE = "删除打印机";
+    String PRINTER_DELETE_SUCCESS = "删除打印机【ID:{{#id}}】";
+
+    // ======================= PRINTER_TEMPLATE 打印模板 =======================
+
+    String PRINTER_TEMPLATE_TYPE = "打印模板";
+    String PRINTER_TEMPLATE_SAVE_SUB_TYPE = "保存模板";
+    String PRINTER_TEMPLATE_SAVE_SUCCESS = "保存打印模板";
+
+    // ======================= DISH_IMPORT 菜品导入 =======================
+
+    String DISH_IMPORT_TYPE = "菜品导入";
+    String DISH_IMPORT_SUB_TYPE = "Excel导入";
+    String DISH_IMPORT_SUCCESS = "Excel导入完成，文件名：{{#file.originalFilename}}";
+
 }
