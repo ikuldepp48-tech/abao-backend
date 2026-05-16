@@ -61,6 +61,8 @@ public class RestaurantDishSkuServiceImpl implements RestaurantDishSkuService {
     }
 
     @Override
+    @LogRecord(type = SKU_TYPE, subType = SKU_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = SKU_DELETE_SUCCESS)
     public void deleteSku(Long id) {
         validateSkuExists(id);
         RestaurantDishSkuDO sku = skuMapper.selectById(id);

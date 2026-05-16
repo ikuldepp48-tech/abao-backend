@@ -13,6 +13,7 @@ import cn.iocoder.yudao.module.restaurant.dal.mysql.addon.RestaurantDishSpuAddon
 import cn.iocoder.yudao.module.restaurant.dal.mysql.store.RestaurantStoreDishMapper;
 import cn.iocoder.yudao.module.restaurant.service.menu.MenuCacheEvictEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import com.mzt.logapi.starter.annotation.LogRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.restaurant.enums.ErrorCodeConstants.DISH_ADDON_NOT_EXISTS;
+import static cn.iocoder.yudao.module.restaurant.enums.LogRecordConstants.*;
 
 @Service
 @Validated
@@ -41,6 +43,9 @@ public class RestaurantDishAddonServiceImpl implements RestaurantDishAddonServic
     private ApplicationEventPublisher eventPublisher;
 
     @Override
+    @LogRecord(type = ADDON_TYPE, subType = ADDON_CREATE_SUB_TYPE, bizNo = "{{#createReqVO.brandId}}",
+            success = ADDON_CREATE_SUCCESS,
+            extra = "{\"extraPrice\":\"{{#createReqVO.extraPrice}}\"}")
     public Long createAddon(RestaurantDishAddonCreateReqVO createReqVO) {
         RestaurantDishAddonDO addon = RestaurantDishAddonConvert.INSTANCE.convert(createReqVO);
         addonMapper.insert(addon);
@@ -48,6 +53,9 @@ public class RestaurantDishAddonServiceImpl implements RestaurantDishAddonServic
     }
 
     @Override
+    @LogRecord(type = ADDON_TYPE, subType = ADDON_UPDATE_SUB_TYPE, bizNo = "{{#updateReqVO.id}}",
+            success = ADDON_UPDATE_SUCCESS,
+            extra = "{\"extraPrice\":\"{{#updateReqVO.extraPrice}}\"}")
     public void updateAddon(RestaurantDishAddonUpdateReqVO updateReqVO) {
         validateAddonExists(updateReqVO.getId());
         RestaurantDishAddonDO updateObj = RestaurantDishAddonConvert.INSTANCE.convert(updateReqVO);
@@ -57,6 +65,8 @@ public class RestaurantDishAddonServiceImpl implements RestaurantDishAddonServic
     }
 
     @Override
+    @LogRecord(type = ADDON_TYPE, subType = ADDON_DELETE_SUB_TYPE, bizNo = "{{#id}}",
+            success = ADDON_DELETE_SUCCESS)
     public void deleteAddon(Long id) {
         validateAddonExists(id);
 

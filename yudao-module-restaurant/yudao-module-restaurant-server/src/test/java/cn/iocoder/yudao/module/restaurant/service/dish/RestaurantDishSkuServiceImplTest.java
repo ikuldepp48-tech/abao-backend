@@ -246,6 +246,55 @@ class RestaurantDishSkuServiceImplTest {
                 "updateSku 的 success 应包含 {_DIFF{#updateReqVO}} 用于自动记录金额变更");
     }
 
+    // ==================== deleteSku ====================
+
+    @Test
+    void deleteSku_正常路径_删除SKU成功() {
+        when(skuMapper.selectById(1L)).thenReturn(mockSku);
+        mockStoreDishForSpu(10L, 100L);
+
+        skuService.deleteSku(1L);
+
+        verify(skuMapper).deleteById(1L);
+        verify(eventPublisher).publishEvent(any(MenuCacheEvictEvent.class));
+    }
+
+    @Test
+    void deleteSku_异常路径_SKU不存在抛出异常() {
+        when(skuMapper.selectById(999L)).thenReturn(null);
+
+        assertThrows(cn.iocoder.yudao.framework.common.exception.ServiceException.class, () ->
+                skuService.deleteSku(999L),
+                "不存在的SKU应抛出 ServiceException");
+    }
+
+    @Test
+    void deleteSku_并发路径_两个不同SKU删除互不影响() {
+        RestaurantDishSkuDO sku2 = new RestaurantDishSkuDO();
+        sku2.setId(2L);
+        sku2.setSpuId(20L);
+
+        when(skuMapper.selectById(1L)).thenReturn(mockSku);
+        when(skuMapper.selectById(2L)).thenReturn(sku2);
+        mockStoreDishForSpu(10L, 100L);
+        mockStoreDishForSpu(20L, 200L);
+
+        skuService.deleteSku(1L);
+        skuService.deleteSku(2L);
+
+        verify(skuMapper, times(2)).deleteById(anyLong());
+        verify(eventPublisher, times(2)).publishEvent(any(MenuCacheEvictEvent.class));
+    }
+
+    @Test
+    void deleteSku_检查LogRecord注解存在() throws NoSuchMethodException {
+        Method method = RestaurantDishSkuServiceImpl.class.getMethod("deleteSku", Long.class);
+        LogRecord annotation = method.getAnnotation(LogRecord.class);
+        assertNotNull(annotation, "deleteSku 缺少 @LogRecord 注解");
+        assertEquals("菜品SKU", annotation.type());
+        assertEquals("删除SKU", annotation.subType());
+    }
+
     // ==================== helpers ====================
 
     private RestaurantDishSkuCreateReqVO buildCreateVO() {

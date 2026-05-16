@@ -43,6 +43,18 @@ public interface LogRecordConstants {
     String SKU_CREATE_SUCCESS = "创建SKU【{{#createReqVO.name}}】，售价 ¥{{#createReqVO.price}}，会员价 ¥{{#createReqVO.memberPrice}}，成本价 ¥{{#createReqVO.costPrice}}";
     String SKU_UPDATE_SUB_TYPE = "更新SKU";
     String SKU_UPDATE_SUCCESS = "更新SKU【{{#updateReqVO.name}}】: {_DIFF{#updateReqVO}}";
+    String SKU_DELETE_SUB_TYPE = "删除SKU";
+    String SKU_DELETE_SUCCESS = "删除SKU【ID:{{#id}}】";
+
+    // ======================= ADDON 加料 =======================
+
+    String ADDON_TYPE = "加料";
+    String ADDON_CREATE_SUB_TYPE = "创建加料";
+    String ADDON_CREATE_SUCCESS = "创建加料【{{#createReqVO.name}}】，加价 ¥{{#createReqVO.extraPrice}}";
+    String ADDON_UPDATE_SUB_TYPE = "更新加料";
+    String ADDON_UPDATE_SUCCESS = "更新加料【{{#updateReqVO.name}}】";
+    String ADDON_DELETE_SUB_TYPE = "删除加料";
+    String ADDON_DELETE_SUCCESS = "删除加料【ID:{{#id}}】";
 
     // ======================= STORE_DISH 门店菜品 =======================
 
