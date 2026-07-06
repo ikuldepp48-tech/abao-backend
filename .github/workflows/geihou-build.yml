@@ -66,6 +66,9 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Install Geihou dependency BOM
+        run: mvn -f geihou-dependencies/pom.xml -B -DskipTests install
+
       - name: Install bootstrap reactor dependencies
         run: mvn -f pom-geihou.xml -B -pl geihou-bootstrap -am -DskipTests install
 
@@ -101,6 +104,9 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
+
+      - name: Install Geihou dependency BOM
+        run: mvn -f geihou-dependencies/pom.xml -B -DskipTests install
 
       - name: Install finance reactor dependencies
         run: mvn -f pom-geihou.xml -B -pl geihou-module-finance/geihou-module-finance-biz -am -DskipTests install

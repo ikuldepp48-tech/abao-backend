@@ -45,6 +45,7 @@ jobs:
 
       - name: Run Geihou Flyway smoke
         run: |
+          mvn -f geihou-dependencies/pom.xml -B -DskipTests install
           mvn -f pom-geihou.xml -B -pl geihou-bootstrap -am -DskipTests install
           mvn -f geihou-bootstrap/pom.xml -B test -Dtest=FlywayMigrationSmokeTest -Dsurefire.useFile=false
 
