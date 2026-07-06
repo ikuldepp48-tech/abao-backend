@@ -1,0 +1,3 @@
+com.geihou.framework.tenant.config.TenantAutoConfiguration
+com.geihou.framework.tenant.config.TenantMyBatisAutoConfiguration
+com.geihou.framework.tenant.config.TenantAsyncAutoConfiguration

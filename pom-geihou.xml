@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.geihou</groupId>
+    <artifactId>geihou-root</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>Standalone Geihou skeleton aggregator. Placeholder build only; not connected to the legacy root reactor.</description>
+
+    <modules>
+        <module>geihou-dependencies</module>
+        <module>geihou-common</module>
+        <module>geihou-framework</module>
+        <module>geihou-module-gateway</module>
+        <module>geihou-module-system</module>
+        <module>geihou-module-infra</module>
+        <module>geihou-module-finance</module>
+        <module>geihou-module-supplychain</module>
+        <module>geihou-module-hr</module>
+        <module>geihou-module-market</module>
+        <module>geihou-module-strategy</module>
+        <module>geihou-module-risk</module>
+        <module>geihou-module-gene</module>
+        <module>geihou-module-insight</module>
+        <module>geihou-module-flywheel</module>
+        <module>geihou-module-strategy-track</module>
+        <module>geihou-module-knowledge</module>
+        <module>geihou-bootstrap</module>
+    </modules>
+</project>

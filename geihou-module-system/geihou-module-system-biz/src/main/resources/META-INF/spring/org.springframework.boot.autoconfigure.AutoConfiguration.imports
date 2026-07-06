@@ -1,0 +1,6 @@
+com.geihou.module.system.framework.jwt.kms.GeihouKmsAutoConfiguration
+com.geihou.module.system.framework.jwt.GeihouActiveSigningSecretAutoConfiguration
+com.geihou.module.system.framework.jwt.GeihouAccessTokenIssuerAutoConfiguration
+com.geihou.module.system.framework.security.config.GeihouAuthTokenAutoConfiguration
+com.geihou.module.system.framework.security.config.GeihouTwoFactorSecretKeyAutoConfiguration
+com.geihou.module.system.framework.security.config.GeihouAuthLoginTokenServiceAutoConfiguration
