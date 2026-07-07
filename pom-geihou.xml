@@ -22,8 +22,6 @@
         <module>geihou-module-finance</module>
         <module>geihou-module-supplychain</module>
         <module>geihou-module-hr</module>
-        <module>geihou-module-market</module>
-        <module>geihou-module-strategy</module>
         <module>geihou-module-risk</module>
         <module>geihou-module-gene</module>
         <module>geihou-module-insight</module>

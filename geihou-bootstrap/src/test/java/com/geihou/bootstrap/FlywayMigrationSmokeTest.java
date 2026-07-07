@@ -50,7 +50,17 @@ class FlywayMigrationSmokeTest {
             // Existing table count assertions.
             assertCount(connection, "SELECT COUNT(*) FROM tenants", 1);
             assertCount(connection, "SELECT COUNT(*) FROM tenant_subsystem_enabled", 11);
-            assertCount(connection, "SELECT COUNT(*) FROM microservice_registry", 14);
+            assertCount(connection, "SELECT COUNT(*) FROM microservice_registry", 12);
+            // H173: market/strategy removed by V03_029 to align with H159 12-service topology.
+            assertCount(connection,
+                    "SELECT COUNT(*) FROM microservice_registry "
+                            + "WHERE service_name IN ('geihou-module-market','geihou-module-strategy')",
+                    0);
+            // H173: strategy-track is a different service from strategy and must remain.
+            assertCount(connection,
+                    "SELECT COUNT(*) FROM microservice_registry "
+                            + "WHERE service_name = 'geihou-module-strategy-track'",
+                    1);
             assertCount(connection, "SELECT COUNT(*) FROM service_health_log", 0);
             assertCount(connection, "SELECT COUNT(*) FROM auth_token_revoked", 0);
             assertCount(connection, "SELECT COUNT(*) FROM auth_user", 0);
