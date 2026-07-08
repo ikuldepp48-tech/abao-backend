@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: geihou-module-gateway
+
+server:
+  port: 48080
