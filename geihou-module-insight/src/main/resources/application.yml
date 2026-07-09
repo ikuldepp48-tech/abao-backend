@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: geihou-module-insight
+
+server:
+  port: 48088

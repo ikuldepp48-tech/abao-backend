@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: geihou-module-gene
+
+server:
+  port: 48087
