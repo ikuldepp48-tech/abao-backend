@@ -36,6 +36,9 @@ public final class GeihouAuthErrorCodes {
     /** PRD 0-05 display code: 0001007. */
     public static final int TWO_FACTOR_REQUIRED = 1007;
 
+    /** PRD 0-05 display code: 0001008. Auth subsystem entirely unavailable (HTTP 503). */
+    public static final int AUTH_SERVICE_UNAVAILABLE = 1008;
+
     private GeihouAuthErrorCodes() {
     }
 }

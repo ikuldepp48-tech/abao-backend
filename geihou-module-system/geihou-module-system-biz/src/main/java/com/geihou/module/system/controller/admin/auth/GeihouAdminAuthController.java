@@ -17,6 +17,7 @@ import com.geihou.module.system.service.auth.GeihouTwoFactorVerifyOrchestrationS
 import com.geihou.module.system.service.auth.GeihouTwoFactorVerifyOrchestrationService.TwoFactorVerifyResult;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Objects;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin-api/auth")
+@ConditionalOnProperty(
+        prefix = "geihou.security",
+        name = "auth-disabled",
+        havingValue = "false",
+        matchIfMissing = true)
 public class GeihouAdminAuthController {
 
     private static final int LOGIN_DENIED_CODE = 401000;

@@ -20,16 +20,17 @@ class GeihouAuthErrorCodesTest {
         assertThat(GeihouAuthErrorCodes.ACCOUNT_LOCKED).isEqualTo(1005);
         assertThat(GeihouAuthErrorCodes.ACCOUNT_DISABLED).isEqualTo(1006);
         assertThat(GeihouAuthErrorCodes.TWO_FACTOR_REQUIRED).isEqualTo(1007);
+        assertThat(GeihouAuthErrorCodes.AUTH_SERVICE_UNAVAILABLE).isEqualTo(1008);
     }
 
     @Test
-    void shouldExposeExactlyNineAuthConstants() {
+    void shouldExposeExactlyTenAuthConstants() {
         long constantCount = Arrays.stream(GeihouAuthErrorCodes.class.getDeclaredFields())
                 .filter(field -> Modifier.isPublic(field.getModifiers()))
                 .filter(field -> Modifier.isStatic(field.getModifiers()))
                 .filter(field -> Modifier.isFinal(field.getModifiers()))
                 .count();
 
-        assertThat(constantCount).isEqualTo(9);
+        assertThat(constantCount).isEqualTo(10);
     }
 }
