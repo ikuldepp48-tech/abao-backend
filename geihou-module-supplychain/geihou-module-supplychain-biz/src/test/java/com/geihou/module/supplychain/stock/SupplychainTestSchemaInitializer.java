@@ -39,7 +39,7 @@ public final class SupplychainTestSchemaInitializer {
                         source_record_id BIGINT,
                         source_order_item_id BIGINT,
                         reference_no VARCHAR(64),
-                        client_request_id VARCHAR(64),
+                        client_request_id VARCHAR(191),
                         operator_user_id BIGINT NOT NULL,
                         balance_after DECIMAL(18,4),
                         create_time DATETIME NOT NULL,
@@ -139,7 +139,7 @@ public final class SupplychainTestSchemaInitializer {
                         source_module VARCHAR(64) NOT NULL,
                         source_record_id BIGINT NOT NULL,
                         reference_no VARCHAR(64),
-                        idempotent_key VARCHAR(64) NOT NULL,
+                        idempotent_key VARCHAR(128) NOT NULL,
                         status VARCHAR(20) NOT NULL DEFAULT 'RESERVED',
                         commit_event_id BIGINT,
                         operator_user_id BIGINT NOT NULL,
@@ -455,7 +455,28 @@ public final class SupplychainTestSchemaInitializer {
                     )
                     """);
 
+            // supplychain_command_journal table (C0/FIN-CONSISTENCY)
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS supplychain_command_journal (
+                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        tenant_id BIGINT NOT NULL,
+                        operation VARCHAR(32) NOT NULL,
+                        business_command_id VARCHAR(128) NOT NULL,
+                        request_body_sha256 CHAR(64) NOT NULL,
+                        result_schema_version INT NOT NULL DEFAULT 1,
+                        result_snapshot TEXT NOT NULL,
+                        executed_at TIMESTAMP(3) NOT NULL,
+                        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        CONSTRAINT uk_tenant_op_cmd UNIQUE (tenant_id, operation, business_command_id)
+                    )
+                    """);
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_scj_tenant_executed " +
+                    "ON supplychain_command_journal (tenant_id, executed_at)");
+            stmt.execute("CREATE INDEX IF NOT EXISTS idx_scj_tenant_op_executed " +
+                    "ON supplychain_command_journal (tenant_id, operation, executed_at)");
+
             // Clean tables (order matters: items before transfer_order, consumption/output before production_order)
+            stmt.execute("DELETE FROM supplychain_command_journal");
             stmt.execute("DELETE FROM transfer_order_item");
             stmt.execute("DELETE FROM transfer_order");
             stmt.execute("DELETE FROM production_order_consumption");

@@ -207,4 +207,20 @@ public final class StockErrorCodeConstants {
     /** 调拨单明细为空 */
     public static final ErrorCode TRANSFER_ITEMS_EMPTY =
         new ErrorCode(2002063, "Transfer order items must not be empty");
+
+    // --- G0-04H185: C4 command consistency errors (2_002_xxx, codes 2002064-2002065) ---
+
+    /**
+     * 幂等冲突：同一 business_command_id 但 request_body_sha256 不同 (HTTP 409)。
+     * 仅在 6 个写端点重放时返回。msg 与 C4 冻结的 RpcErrorResponse.msg 一致。
+     */
+    public static final ErrorCode IDEMPOTENT_CONFLICT =
+        new ErrorCode(2002064, "IDEMPOTENT_CONFLICT");
+
+    /**
+     * 一致性内部错误：CommandExecutor T2 有界重试耗尽 (HTTP 500)。
+     * 仅在 6 个写端点执行时返回。msg 与 C4 冻结的 RpcErrorResponse.msg 一致。
+     */
+    public static final ErrorCode CONSISTENCY_INTERNAL_ERROR =
+        new ErrorCode(2002065, "CONSISTENCY_INTERNAL_ERROR");
 }

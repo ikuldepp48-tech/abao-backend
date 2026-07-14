@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Error code verification test.
  *
- * <p>Covers: AC-19 (error codes use 2_002_xxx range, 2002001-2002063).
+ * <p>Covers: AC-19 (error codes use 2_002_xxx range, 2002001-2002065).
  */
 class StockErrorCodeTest {
 
@@ -27,7 +27,7 @@ class StockErrorCodeTest {
                     com.geihou.common.error.ErrorCode code =
                             (com.geihou.common.error.ErrorCode) field.get(null);
                     int codeValue = code.getCode();
-                    if (codeValue < 2002001 || codeValue > 2002063) {
+                    if (codeValue < 2002001 || codeValue > 2002065) {
                         violations.add(field.getName() + " = " + codeValue);
                     }
                 } catch (IllegalAccessException e) {
@@ -36,11 +36,11 @@ class StockErrorCodeTest {
             }
         }
 
-        assertThat(violations).as("Error codes outside 2002001-2002063 range").isEmpty();
+        assertThat(violations).as("Error codes outside 2002001-2002065 range").isEmpty();
     }
 
     @Test
-    void errorCodeConstantsHas63Codes() {
+    void errorCodeConstantsHas65Codes() {
         Field[] fields = StockErrorCodeConstants.class.getDeclaredFields();
         long count = 0;
         for (Field field : fields) {
@@ -48,7 +48,7 @@ class StockErrorCodeTest {
                 count++;
             }
         }
-        assertThat(count).isEqualTo(63);
+        assertThat(count).isEqualTo(65);
     }
 
     @Test
@@ -173,5 +173,16 @@ class StockErrorCodeTest {
         assertThat(StockErrorCodeConstants.INSUFFICIENT_FOR_TRANSFER.getCode()).isEqualTo(2002061);
         assertThat(StockErrorCodeConstants.TRANSFER_CANCEL_NOT_ALLOWED.getCode()).isEqualTo(2002062);
         assertThat(StockErrorCodeConstants.TRANSFER_ITEMS_EMPTY.getCode()).isEqualTo(2002063);
+    }
+
+    @Test
+    void c4ConsistencyErrorCodesExist() {
+        // G0-04H185: C4 command consistency errors (codes 2002064-2002065)
+        // msg must match frozen RpcErrorResponse.msg exactly (pure symbol, no descriptive text)
+        assertThat(StockErrorCodeConstants.IDEMPOTENT_CONFLICT.getCode()).isEqualTo(2002064);
+        assertThat(StockErrorCodeConstants.IDEMPOTENT_CONFLICT.getMsg()).isEqualTo("IDEMPOTENT_CONFLICT");
+
+        assertThat(StockErrorCodeConstants.CONSISTENCY_INTERNAL_ERROR.getCode()).isEqualTo(2002065);
+        assertThat(StockErrorCodeConstants.CONSISTENCY_INTERNAL_ERROR.getMsg()).isEqualTo("CONSISTENCY_INTERNAL_ERROR");
     }
 }
