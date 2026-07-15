@@ -1,12 +1,6 @@
 package com.geihou.module.supplychain.stock.command;
 
 import com.geihou.framework.tenant.core.context.TenantContextHolder;
-import com.geihou.module.supplychain.api.stock.dto.SalesOutBomReverseItemRespDTO;
-import com.geihou.module.supplychain.api.stock.dto.SalesOutBomReverseRespDTO;
-import com.geihou.module.supplychain.api.stock.dto.SalesReverseRestoreItemRespDTO;
-import com.geihou.module.supplychain.api.stock.dto.SalesReverseRestoreRespDTO;
-import com.geihou.module.supplychain.api.stock.dto.StockCoverageDecisionRespDTO;
-import com.geihou.module.supplychain.api.stock.enums.StockCoverageModeEnum;
 import com.geihou.module.supplychain.api.stock.enums.SupplychainCommandOperationEnum;
 import com.geihou.module.supplychain.stock.dal.dataobject.SupplychainCommandJournalDO;
 import com.geihou.module.supplychain.stock.dal.mapper.SupplychainCommandJournalMapper;
@@ -19,7 +13,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -161,7 +154,7 @@ public class CommandExecutorImpl implements CommandExecutor {
                 String snapshotJson = codec.serialize(operation, businessResult);
 
                 SnapshotV1.Root root = codec.deserialize(operation, snapshotJson);
-                R normalizedResult = adaptSnapshotToBusiness(operation, root);
+                R normalizedResult = CommandSnapshotAdapter.adaptToBusiness(operation, root);
 
                 SupplychainCommandJournalDO journalDO = new SupplychainCommandJournalDO();
                 journalDO.setTenantId(tenantId);
@@ -227,78 +220,8 @@ public class CommandExecutorImpl implements CommandExecutor {
                     "Unknown resultSchemaVersion: " + schemaVersion);
         }
         SnapshotV1.Root root = codec.deserialize(operation, existing.getResultSnapshot());
-        R businessResult = adaptSnapshotToBusiness(operation, root);
+        R businessResult = CommandSnapshotAdapter.adaptToBusiness(operation, root);
         return new Replay<>(businessResult);
-    }
-
-    // --- Snapshot to business adaptation ---
-
-    @SuppressWarnings("unchecked")
-    private <R> R adaptSnapshotToBusiness(
-            SupplychainCommandOperationEnum operation,
-            SnapshotV1.Root root) {
-        Object result = switch (operation) {
-            case RESERVE -> Long.valueOf(((SnapshotV1.Reserve) root).reserveId());
-            case RELEASE -> null;
-            case COMMIT -> Long.valueOf(((SnapshotV1.Commit) root).consumeOutEventId());
-            case SALES_OUT_BOM_REVERSE -> adaptSalesOutBomReverse((SnapshotV1.SalesOutBomReverse) root);
-            case SALES_REVERSE_RESTORE -> adaptSalesReverseRestore((SnapshotV1.SalesReverseRestore) root);
-            case OBSERVE_MISSING_MAPPING -> {
-                SnapshotV1.Observe snap = (SnapshotV1.Observe) root;
-                yield new StockCoverageDecisionRespDTO(
-                        StockCoverageModeEnum.fromCode(snap.mode()), snap.enforce());
-            }
-        };
-        return (R) result;
-    }
-
-    private SalesOutBomReverseRespDTO adaptSalesOutBomReverse(SnapshotV1.SalesOutBomReverse snap) {
-        SalesOutBomReverseRespDTO dto = new SalesOutBomReverseRespDTO();
-        dto.setProductId(snap.productId());
-        dto.setSkuCode(snap.skuCode());
-        dto.setQuantity(snap.quantity());
-        dto.setRecipeId(snap.recipeId());
-        dto.setRecipeVersion(snap.recipeVersion());
-        dto.setItems(snap.items().stream()
-                .map(this::adaptSalesOutBomReverseItem)
-                .toList());
-        return dto;
-    }
-
-    private SalesOutBomReverseItemRespDTO adaptSalesOutBomReverseItem(SnapshotV1.SalesOutBomReverseItem snap) {
-        SalesOutBomReverseItemRespDTO dto = new SalesOutBomReverseItemRespDTO();
-        dto.setComponentProductId(snap.componentProductId());
-        dto.setSkuCode(snap.skuCode());
-        dto.setUnit(snap.unit());
-        dto.setStockItemId(snap.stockItemId());
-        dto.setQuantity(snap.quantity());
-        dto.setEventId(snap.eventId());
-        dto.setClientRequestId(snap.clientRequestId());
-        dto.setRecipeId(snap.recipeId());
-        dto.setRecipeVersion(snap.recipeVersion());
-        return dto;
-    }
-
-    private SalesReverseRestoreRespDTO adaptSalesReverseRestore(SnapshotV1.SalesReverseRestore snap) {
-        SalesReverseRestoreRespDTO dto = new SalesReverseRestoreRespDTO();
-        dto.setRestoredItemCount(snap.restoredItemCount());
-        dto.setItems(snap.items().stream()
-                .map(this::adaptSalesReverseRestoreItem)
-                .toList());
-        return dto;
-    }
-
-    private SalesReverseRestoreItemRespDTO adaptSalesReverseRestoreItem(SnapshotV1.SalesReverseRestoreItem snap) {
-        SalesReverseRestoreItemRespDTO dto = new SalesReverseRestoreItemRespDTO();
-        dto.setOriginalEventId(snap.originalEventId());
-        dto.setRestoreEventId(snap.restoreEventId());
-        dto.setStockItemId(snap.stockItemId());
-        dto.setLocationId(snap.locationId());
-        dto.setQuantity(snap.quantity());
-        dto.setUnit(snap.unit());
-        dto.setRecipeId(snap.recipeId());
-        dto.setRecipeVersion(snap.recipeVersion());
-        return dto;
     }
 
     // --- TxOutcome to CommandResult ---

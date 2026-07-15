@@ -110,6 +110,46 @@ public final class TestSupport {
         return new StockCoverageDecisionRespDTO(StockCoverageModeEnum.ENFORCE, true);
     }
 
+    // --- CommandStatusResult result value factories (for query service tests) ---
+
+    public static CommandStatusResult.ReserveResult sampleReserveResultValue() {
+        return new CommandStatusResult.ReserveResult(123L);
+    }
+
+    public static CommandStatusResult.ReleaseResult sampleReleaseResultValue() {
+        return new CommandStatusResult.ReleaseResult();
+    }
+
+    public static CommandStatusResult.CommitResult sampleCommitResultValue() {
+        return new CommandStatusResult.CommitResult(456L);
+    }
+
+    public static CommandStatusResult.SalesOutBomReverseResult sampleSalesOutBomReverseResultValue() {
+        return new CommandStatusResult.SalesOutBomReverseResult(
+                100L, "SKU-FINISHED", new BigDecimal("5.00"),
+                200L, 1,
+                List.of(new CommandStatusResult.SalesOutBomReverseResult.Item(
+                        101L, "SKU-RAW", "KG", 1001L,
+                        new BigDecimal("2.00"), 5001L, "cr-001::101",
+                        200L, 1)));
+    }
+
+    public static CommandStatusResult.SalesReverseRestoreResult sampleSalesReverseRestoreResultValue() {
+        return new CommandStatusResult.SalesReverseRestoreResult(
+                1,
+                List.of(new CommandStatusResult.SalesReverseRestoreResult.Item(
+                        5001L, 6001L, 1001L, 2001L,
+                        new BigDecimal("2.00"), "KG", 200L, 1)));
+    }
+
+    public static CommandStatusResult.AuditOnlyObserveResult sampleAuditOnlyObserveResult() {
+        return new CommandStatusResult.AuditOnlyObserveResult();
+    }
+
+    public static CommandStatusResult.EnforceObserveResult sampleEnforceObserveResult() {
+        return new CommandStatusResult.EnforceObserveResult();
+    }
+
     // --- Journal DO factory ---
 
     public static SupplychainCommandJournalDO journalDO(
