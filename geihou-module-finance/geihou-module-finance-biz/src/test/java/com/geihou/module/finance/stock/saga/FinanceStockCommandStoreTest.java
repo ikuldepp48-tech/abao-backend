@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HexFormat;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -368,7 +369,7 @@ class FinanceStockCommandStoreTest {
         String token = "token-success";
         claimToInFlight(TENANT_A, id, token);
 
-        LocalDateTime executedAt = LocalDateTime.now();
+        LocalDateTime executedAt = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
         boolean result = store.completeSuccess(TENANT_A, id, token,
                 BODY_B, 1, executedAt, executedAt);
         assertThat(result).isTrue();
@@ -423,7 +424,9 @@ class FinanceStockCommandStoreTest {
         String token = "token-unknown";
         claimToInFlight(TENANT_A, id, token);
 
-        LocalDateTime nextAttempt = LocalDateTime.now().plusMinutes(1);
+        LocalDateTime nextAttempt = LocalDateTime.now()
+                .plusMinutes(1)
+                .truncatedTo(ChronoUnit.MILLIS);
         boolean result = store.markUnknown(TENANT_A, id, token, nextAttempt,
                 0, "SocketTimeout", "no response", LocalDateTime.now());
         assertThat(result).isTrue();
