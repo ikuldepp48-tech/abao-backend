@@ -4,8 +4,10 @@ import com.geihou.module.finance.cart.CartTestSchemaInitializer;
 import com.geihou.module.finance.cart.dal.dataobject.CartDO;
 import com.geihou.module.finance.cart.dal.dataobject.CartEventLogDO;
 import com.geihou.module.finance.cart.dal.dataobject.CartItemDO;
+import com.geihou.module.finance.checkout.CheckoutTestSchemaInitializer;
 import com.geihou.module.finance.checkout.dal.dataobject.CheckoutIdempotentDO;
 import com.geihou.module.finance.checkout.dal.dataobject.CheckoutSessionDO;
+import com.geihou.module.finance.stock.saga.dal.dataobject.FinanceStockCommandDO;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
 
@@ -37,9 +39,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>This test ensures that:
  * <ol>
- *   <li>The five Flyway DDL files exist.</li>
+ *   <li>The six Flyway DDL files exist.</li>
  *   <li>DDL business columns match DO business fields (both directions).</li>
- *   <li>TestSchema column names match Flyway DDL column names for all five tables.</li>
+ *   <li>TestSchema column names match Flyway DDL column names for all six tables.</li>
  * </ol>
  *
  * <p>Framework/audit columns ({@code id, creator, create_time, updater, update_time, deleted})
@@ -64,7 +66,8 @@ class CartCheckoutDdlConsistencyTest {
             new DdlMapping("V02_061__cart_item.sql", "cart_item", CartItemDO.class),
             new DdlMapping("V02_062__cart_event_log.sql", "cart_event_log", CartEventLogDO.class),
             new DdlMapping("V02_063__checkout_session.sql", "checkout_session", CheckoutSessionDO.class),
-            new DdlMapping("V02_064__checkout_idempotent.sql", "checkout_idempotent", CheckoutIdempotentDO.class)
+            new DdlMapping("V02_064__checkout_idempotent.sql", "checkout_idempotent", CheckoutIdempotentDO.class),
+            new DdlMapping("V02_065__finance_stock_command.sql", "finance_stock_command", FinanceStockCommandDO.class)
     );
 
     // ── Keywords that start constraint/index lines, not column definitions ──
@@ -115,7 +118,7 @@ class CartCheckoutDdlConsistencyTest {
     @Test
     void testSchemaColumns_matchDdlColumns() throws Exception {
         DataSource dataSource = createH2DataSource();
-        CartTestSchemaInitializer.initialize(dataSource);
+        CheckoutTestSchemaInitializer.initialize(dataSource);
 
         for (DdlMapping mapping : DDL_MAPPINGS) {
             Set<String> ddlColumns = parseDdlColumns(mapping.ddlFileName);
@@ -272,7 +275,7 @@ class CartCheckoutDdlConsistencyTest {
      * {@code skuNameSnapshot} → {@code sku_name_snapshot}.
      */
     private static String camelToSnake(String camel) {
-        return camel.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+        return camel.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase();
     }
 
     // ── Data class for DDL → DO mapping ──────────────────────────────────────
