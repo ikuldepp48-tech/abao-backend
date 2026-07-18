@@ -118,6 +118,8 @@ public class FinanceStockCommandStoreImpl implements FinanceStockCommandStore {
         mismatchUnless(existing.getSagaType(), command.sagaType().name(), "sagaType");
         mismatchUnless(existing.getSagaId(), command.sagaId(), "sagaId");
         mismatchUnless(existing.getStepKey(), command.stepKey(), "stepKey");
+        mismatchUnless(existing.getParentCommandId(), command.parentCommandId(),
+                "parentCommandId");
         mismatchUnless(existing.getOperation(), command.operation(), "operation");
         mismatchUnless(existing.getBusinessCommandId(), command.businessCommandId(),
                 "businessCommandId");

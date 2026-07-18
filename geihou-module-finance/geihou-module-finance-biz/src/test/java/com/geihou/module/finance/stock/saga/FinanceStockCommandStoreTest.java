@@ -125,6 +125,26 @@ class FinanceStockCommandStoreTest {
         );
     }
 
+    private FinanceStockCommandCreate buildCreateWithParent(
+            long tenantId, String cmdId, byte[] body, Long parentCommandId) {
+        return new FinanceStockCommandCreate(
+                tenantId,
+                FinanceStockSagaType.CHECKOUT,
+                100L,
+                "step-" + cmdId,
+                parentCommandId,
+                "RESERVE",
+                cmdId,
+                FinanceStockTransportMode.LOCAL_API_V1,
+                false,
+                1,
+                body,
+                sha256Hex(body),
+                3,
+                3
+        );
+    }
+
     private long createPending(long tenantId, String cmdId) {
         FinanceStockCommandDO DO = store.createOrGet(buildCreate(tenantId, cmdId, BODY_A));
         assertThat(DO.getStatus()).isEqualTo("PENDING");
@@ -691,6 +711,25 @@ class FinanceStockCommandStoreTest {
                 TENANT_A, "cmd-B", BODY_A, 100L, "step-A")))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("different records");
+    }
+
+    // ==================== Supplement: same identity, different parentCommandId ====================
+
+    @Test
+    void createOrGet_sameIdentityDifferentParentCommandId_throwsConflict() {
+        // First create with parentCommandId=111L
+        FinanceStockCommandCreate createA = buildCreateWithParent(
+                TENANT_A, "cmd-parent-mismatch", BODY_A, 111L);
+        FinanceStockCommandDO first = store.createOrGet(createA);
+        assertThat(first.getParentCommandId()).isEqualTo(111L);
+
+        // Same identity (tenant, saga, step, operation, businessCommandId, body)
+        // but different parentCommandId -> verifyIdentity must reject
+        FinanceStockCommandCreate createB = buildCreateWithParent(
+                TENANT_A, "cmd-parent-mismatch", BODY_A, 222L);
+        assertThatThrownBy(() -> store.createOrGet(createB))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("parentCommandId");
     }
 
     // ==================== Supplement: abort_requested RETRY_WAIT cannot be claimed ====================
