@@ -144,11 +144,21 @@ class FinanceStockReserveCompletionServiceTest {
     private void transitionToUnknownAndClaimResolution(long tenantId, long id,
                                                        String dispatchToken,
                                                        String resolutionToken) {
-        LocalDateTime now = LocalDateTime.now();
+        // Truncate to millis: H2 DATETIME(3) stores millisecond precision, so
+        // a nanosecond `now` would be rounded by the DB and break the
+        // `next_attempt_at <= now` comparison in claimResolution.
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
         // nextAttemptAt = now so claimResolution's "next_attempt_at <= now" passes
         boolean marked = store.markUnknown(tenantId, id, dispatchToken,
                 now, 0, "Timeout", "no response", now);
         assertThat(marked).as("markUnknown should succeed").isTrue();
+        // Verify nextAttemptAt == now persists at millisecond precision (CI-FIX
+        // regression guard for the time-precision race that broke
+        // claimResolution's `next_attempt_at <= now` predicate).
+        FinanceStockCommandDO afterMark = mapper.selectById(id);
+        assertThat(afterMark.getNextAttemptAt())
+                .as("persisted nextAttemptAt must equal `now` at millisecond precision")
+                .isEqualTo(now);
         boolean claimed = store.claimResolution(tenantId, id, resolutionToken,
                 now, now.plusMinutes(5));
         assertThat(claimed).as("claimResolution should succeed").isTrue();
