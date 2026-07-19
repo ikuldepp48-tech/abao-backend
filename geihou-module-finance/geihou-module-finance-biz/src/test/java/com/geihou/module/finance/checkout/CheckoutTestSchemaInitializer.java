@@ -4,6 +4,7 @@ import com.geihou.module.finance.cart.CartTestSchemaInitializer;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
@@ -113,7 +114,34 @@ public final class CheckoutTestSchemaInitializer {
                     )
                     """);
 
+            // G0-04H185 FIN-CONSISTENCY slice 2B: checkout cart item plan
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS checkout_cart_item_plan (
+                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        tenant_id BIGINT NOT NULL,
+                        checkout_session_id BIGINT NOT NULL,
+                        cart_item_id BIGINT NOT NULL,
+                        sku_id BIGINT NOT NULL,
+                        classification VARCHAR(16) NOT NULL,
+                        create_time DATETIME(3) NOT NULL,
+                        update_time DATETIME(3) NOT NULL,
+                        CONSTRAINT uk_ccip_tenant_session_cart
+                            UNIQUE (tenant_id, checkout_session_id, cart_item_id)
+                    )
+                    """);
+
+            // ── Index parity: bring H2 schema indexes in line with Flyway DDL ──
+            // CartTestSchemaInitializer creates the cart/cart_item/cart_event_log/
+            // checkout_session/checkout_idempotent tables WITHOUT indexes (column
+            // parity only). finance_stock_command and checkout_cart_item_plan are
+            // created above with inline UNIQUE constraints but no secondary indexes.
+            // The block below adds every UNIQUE KEY and KEY declared in
+            // V02_060..V02_066 so that CartCheckoutDdlConsistencyTest can assert
+            // precise index parity (not just column parity).
+            createIndexesIfMissing(stmt);
+
             // Clean all tables (preserve original cleanup behavior)
+            stmt.execute("DELETE FROM checkout_cart_item_plan");
             stmt.execute("DELETE FROM finance_stock_command");
             stmt.execute("DELETE FROM checkout_idempotent");
             stmt.execute("DELETE FROM checkout_session");
@@ -121,5 +149,91 @@ public final class CheckoutTestSchemaInitializer {
             stmt.execute("DELETE FROM cart_item");
             stmt.execute("DELETE FROM cart");
         }
+    }
+
+    /**
+     * Create every UNIQUE KEY and KEY from V02_060..V02_066 DDL files.
+     *
+     * <p>Tables created by {@link CartTestSchemaInitializer} (cart, cart_item,
+     * cart_event_log, checkout_session, checkout_idempotent) have no inline
+     * constraints in H2, so both UNIQUE and non-UNIQUE indexes are added here.
+     *
+     * <p>{@code finance_stock_command} and {@code checkout_cart_item_plan}
+     * already declare their UNIQUE constraints inline in H2 CREATE TABLE
+     * above; only their secondary {@code KEY} indexes are added here. The
+     * {@code IF NOT EXISTS} clause keeps this idempotent across re-runs and
+     * safe if CartTestSchemaInitializer ever adds its own indexes.
+     */
+    private static void createIndexesIfMissing(Statement stmt) throws SQLException {
+        // ── cart (V02_060) ──
+        stmt.execute("CREATE UNIQUE INDEX IF NOT EXISTS uk_active_cart " +
+                "ON cart (tenant_id, customer_user_id, shop_id, status, deleted)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_tenant_status " +
+                "ON cart (tenant_id, status, last_activity_time)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_table " +
+                "ON cart (table_id, status)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_business_date " +
+                "ON cart (tenant_id, business_date)");
+
+        // ── cart_item (V02_061) ──
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_cart " +
+                "ON cart_item (cart_id, deleted)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_sku " +
+                "ON cart_item (sku_id)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_tenant_sku " +
+                "ON cart_item (tenant_id, sku_id)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_promotion " +
+                "ON cart_item (applied_promotion_id)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_item_state " +
+                "ON cart_item (item_state)");
+
+        // ── cart_event_log (V02_062) ──
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_cart_time " +
+                "ON cart_event_log (cart_id, event_time)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_tenant_event " +
+                "ON cart_event_log (tenant_id, event_type, event_time)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_operator " +
+                "ON cart_event_log (operator_user_id, event_time)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_sku_time " +
+                "ON cart_event_log (sku_id, event_time)");
+
+        // ── checkout_session (V02_063) ──
+        stmt.execute("CREATE UNIQUE INDEX IF NOT EXISTS uk_session_token " +
+                "ON checkout_session (session_token)");
+        stmt.execute("CREATE UNIQUE INDEX IF NOT EXISTS uk_tenant_cart_active " +
+                "ON checkout_session (tenant_id, cart_id, status, deleted)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_tenant_customer " +
+                "ON checkout_session (tenant_id, customer_user_id, status)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_tenant_shop_date " +
+                "ON checkout_session (tenant_id, shop_id, business_date)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_expire_time " +
+                "ON checkout_session (expire_time, status)");
+
+        // ── checkout_idempotent (V02_064) ──
+        stmt.execute("CREATE UNIQUE INDEX IF NOT EXISTS uk_tenant_idempotent_key " +
+                "ON checkout_idempotent (tenant_id, idempotent_key)");
+        // H2 scopes index names to the schema (not per-table like MySQL), so
+        // this cannot share the DDL name "idx_expire_time" with checkout_session.
+        // The DDL-consistency test compares by (columns, unique), not by name.
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_ci_expire_time " +
+                "ON checkout_idempotent (expire_time)");
+
+        // ── finance_stock_command (V02_065) ──
+        // UNIQUE constraints uk_fsc_remote_identity and uk_fsc_local_step are
+        // declared inline in CREATE TABLE above; only secondary KEYs added here.
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_fsc_dispatch_scan " +
+                "ON finance_stock_command (tenant_id, status, next_attempt_at)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_fsc_lease_scan " +
+                "ON finance_stock_command (tenant_id, status, lease_until)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_fsc_saga " +
+                "ON finance_stock_command (tenant_id, saga_type, saga_id)");
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_fsc_parent " +
+                "ON finance_stock_command (tenant_id, parent_command_id)");
+
+        // ── checkout_cart_item_plan (V02_066) ──
+        // UNIQUE constraint uk_ccip_tenant_session_cart is declared inline in
+        // CREATE TABLE above; only secondary KEY added here.
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_ccip_tenant_session " +
+                "ON checkout_cart_item_plan (tenant_id, checkout_session_id)");
     }
 }
