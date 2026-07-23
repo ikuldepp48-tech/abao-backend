@@ -32,6 +32,12 @@ public class BomRecipeRespDTO {
     private LocalDateTime updateTime;
     private List<Item> items;
 
+    // G0-04H185 SLICE-2C-2A: BOM lookup status (independent of recipe status).
+    // Five values: FOUND / NO_PRODUCT / NO_ACTIVE_RECIPE / AMBIGUOUS_PRODUCT / INVALID_SKU_CODE.
+    // Not persisted - set by BomApiImpl on every return branch so finance classifier
+    // can distinguish empty-state causes without inferring from id/productId.
+    private String lookupStatus;
+
     // --- Inner class for items ---
 
     public static class Item {
@@ -113,4 +119,7 @@ public class BomRecipeRespDTO {
 
     public List<Item> getItems() { return items; }
     public void setItems(List<Item> items) { this.items = items; }
+
+    public String getLookupStatus() { return lookupStatus; }
+    public void setLookupStatus(String lookupStatus) { this.lookupStatus = lookupStatus; }
 }

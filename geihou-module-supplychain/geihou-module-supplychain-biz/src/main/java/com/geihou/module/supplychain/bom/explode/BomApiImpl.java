@@ -69,6 +69,7 @@ public class BomApiImpl implements BomApi {
             empty.setTenantId(tenantId);
             empty.setProductId(productId);
             empty.setItems(new ArrayList<>());
+            empty.setLookupStatus("NO_ACTIVE_RECIPE");
             return empty;
         }
 
@@ -114,6 +115,7 @@ public class BomApiImpl implements BomApi {
             }
         }
         resp.setItems(items);
+        resp.setLookupStatus("FOUND");
 
         return resp;
     }
@@ -122,7 +124,7 @@ public class BomApiImpl implements BomApi {
     public BomRecipeRespDTO getActiveRecipeBySkuCode(Long tenantId, String skuCode) {
         // null/blank skuCode → empty-state DTO, no exception
         if (skuCode == null || skuCode.trim().isEmpty()) {
-            return emptyStateDto();
+            return emptyStateDto("INVALID_SKU_CODE");
         }
 
         List<ProductMasterDO> products = productMasterMapper.selectActiveFinishedByTenantSkuCode(
@@ -130,7 +132,7 @@ public class BomApiImpl implements BomApi {
 
         // 0 matches → empty-state DTO
         if (products == null || products.isEmpty()) {
-            return emptyStateDto();
+            return emptyStateDto("NO_PRODUCT");
         }
 
         // ≥2 matches → empty-state DTO + WARN log, do NOT pick the first
@@ -138,7 +140,7 @@ public class BomApiImpl implements BomApi {
             log.warn("Multiple active FINISHED products found for tenantId={}, skuCode={}, count={}. " +
                      "Returning empty-state DTO without picking the first.",
                      tenantId, skuCode, products.size());
-            return emptyStateDto();
+            return emptyStateDto("AMBIGUOUS_PRODUCT");
         }
 
         // exactly 1 match → delegate to existing getActiveRecipe
@@ -150,11 +152,12 @@ public class BomApiImpl implements BomApi {
      * Build an empty-state {@link BomRecipeRespDTO}: id=null, productId=null, items=emptyList.
      * Non-null, non-throwing — suitable for finance guard read paths.
      */
-    private BomRecipeRespDTO emptyStateDto() {
+    private BomRecipeRespDTO emptyStateDto(String lookupStatus) {
         BomRecipeRespDTO empty = new BomRecipeRespDTO();
         empty.setId(null);
         empty.setProductId(null);
         empty.setItems(Collections.emptyList());
+        empty.setLookupStatus(lookupStatus);
         return empty;
     }
 }

@@ -82,6 +82,7 @@ class BomApiSkuCodeRecipeTest {
         assertThat(result.getId()).isEqualTo(recipeId);
         assertThat(result.getTenantId()).isEqualTo(TENANT_A);
         assertThat(result.getProductId()).isEqualTo(productId);
+        assertThat(result.getLookupStatus()).isEqualTo("FOUND");
         assertThat(result.getStatus()).isEqualTo(BomRecipeStatusEnum.ACTIVE.getCode());
         assertThat(result.getItems()).hasSize(1);
         assertThat(result.getItems().get(0).getComponentProductId()).isEqualTo(rawId);
@@ -98,6 +99,7 @@ class BomApiSkuCodeRecipeTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNull();
         assertThat(result.getProductId()).isNull();
+        assertThat(result.getLookupStatus()).isEqualTo("NO_PRODUCT");
         assertThat(result.getItems()).isEmpty();
     }
 
@@ -110,6 +112,7 @@ class BomApiSkuCodeRecipeTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNull();
         assertThat(result.getProductId()).isNull();
+        assertThat(result.getLookupStatus()).isEqualTo("INVALID_SKU_CODE");
         assertThat(result.getItems()).isEmpty();
     }
 
@@ -122,6 +125,7 @@ class BomApiSkuCodeRecipeTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNull();
         assertThat(result.getProductId()).isNull();
+        assertThat(result.getLookupStatus()).isEqualTo("INVALID_SKU_CODE");
         assertThat(result.getItems()).isEmpty();
     }
 
@@ -137,6 +141,7 @@ class BomApiSkuCodeRecipeTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNull();
         assertThat(result.getProductId()).isNull();
+        assertThat(result.getLookupStatus()).isEqualTo("AMBIGUOUS_PRODUCT");
         assertThat(result.getItems()).isEmpty();
     }
 
@@ -155,6 +160,7 @@ class BomApiSkuCodeRecipeTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNull();
         assertThat(result.getProductId()).isNull();
+        assertThat(result.getLookupStatus()).isEqualTo("NO_PRODUCT");
         assertThat(result.getItems()).isEmpty();
     }
 
@@ -162,12 +168,14 @@ class BomApiSkuCodeRecipeTest {
     void getActiveRecipeBySkuCode_productExistsButNoActiveRecipe_returnsEmptyState() {
         TenantContextHolder.setTenantId(TENANT_A);
 
-        createFinishedProduct(TENANT_A, "P-A", "Product A", SKU_001);
+        Long productId = createFinishedProduct(TENANT_A, "P-A", "Product A", SKU_001);
 
         BomRecipeRespDTO result = bomApi.getActiveRecipeBySkuCode(TENANT_A, SKU_001);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNull();
+        assertThat(result.getProductId()).isEqualTo(productId);
+        assertThat(result.getLookupStatus()).isEqualTo("NO_ACTIVE_RECIPE");
         assertThat(result.getItems()).isEmpty();
     }
 
@@ -183,6 +191,7 @@ class BomApiSkuCodeRecipeTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNull();
         assertThat(result.getProductId()).isNull();
+        assertThat(result.getLookupStatus()).isEqualTo("NO_PRODUCT");
         assertThat(result.getItems()).isEmpty();
     }
 
@@ -197,6 +206,7 @@ class BomApiSkuCodeRecipeTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNull();
         assertThat(result.getProductId()).isNull();
+        assertThat(result.getLookupStatus()).isEqualTo("NO_PRODUCT");
         assertThat(result.getItems()).isEmpty();
     }
 

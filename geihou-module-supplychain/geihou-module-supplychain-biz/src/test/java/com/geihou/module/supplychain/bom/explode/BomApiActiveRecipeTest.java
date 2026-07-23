@@ -78,6 +78,7 @@ class BomApiActiveRecipeTest {
         assertThat(result.getId()).isEqualTo(recipeId);
         assertThat(result.getTenantId()).isEqualTo(TENANT_A);
         assertThat(result.getProductId()).isEqualTo(productId);
+        assertThat(result.getLookupStatus()).isEqualTo("FOUND");
         assertThat(result.getStatus()).isEqualTo(BomRecipeStatusEnum.ACTIVE.getCode());
         assertThat(result.getItems()).hasSize(1);
         assertThat(result.getItems().get(0).getComponentProductId()).isEqualTo(rawId);
@@ -98,6 +99,7 @@ class BomApiActiveRecipeTest {
         assertThat(result.getId()).isNull();
         assertThat(result.getTenantId()).isEqualTo(TENANT_A);
         assertThat(result.getProductId()).isEqualTo(productId);
+        assertThat(result.getLookupStatus()).isEqualTo("NO_ACTIVE_RECIPE");
         assertThat(result.getItems()).isEmpty();
     }
 
@@ -113,6 +115,7 @@ class BomApiActiveRecipeTest {
         assertThat(result.getId()).isNull();
         assertThat(result.getTenantId()).isEqualTo(TENANT_A);
         assertThat(result.getProductId()).isEqualTo(productId);
+        assertThat(result.getLookupStatus()).isEqualTo("NO_ACTIVE_RECIPE");
         assertThat(result.getItems()).isEmpty();
     }
 
@@ -133,6 +136,7 @@ class BomApiActiveRecipeTest {
         assertThat(result.getId()).isNull();
         assertThat(result.getTenantId()).isEqualTo(TENANT_B);
         assertThat(result.getProductId()).isEqualTo(tenantAProductId);
+        assertThat(result.getLookupStatus()).isEqualTo("NO_ACTIVE_RECIPE");
         assertThat(result.getItems()).isEmpty();
     }
 

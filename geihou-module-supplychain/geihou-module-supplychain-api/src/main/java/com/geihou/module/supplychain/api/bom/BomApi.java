@@ -50,6 +50,12 @@ public interface BomApi {
      * <p>If no ACTIVE recipe exists for the given product, returns a {@link BomRecipeRespDTO}
      * with {@code id = null} and an empty items list (explicit empty state).
      *
+     * <p>Sets {@code lookupStatus} on every return:
+     * <ul>
+     *   <li>{@code FOUND} - active recipe exists (id &gt; 0, productId &gt; 0)</li>
+     *   <li>{@code NO_ACTIVE_RECIPE} - product has no ACTIVE recipe (id = null, productId &gt; 0)</li>
+     * </ul>
+     *
      * @param tenantId  tenant ID for isolation
      * @param productId product ID to look up
      * @return recipe header + items, or an empty-state DTO if no active recipe
@@ -72,6 +78,15 @@ public interface BomApi {
      * </ul>
      *
      * <p>If {@code skuCode} is null or blank, returns an empty-state DTO without throwing.
+     *
+     * <p>Sets {@code lookupStatus} on every return (five values):
+     * <ul>
+     *   <li>{@code FOUND} - exactly 1 product + active recipe exists (id &gt; 0, productId &gt; 0)</li>
+     *   <li>{@code NO_PRODUCT} - 0 product matches (id = null, productId = null)</li>
+     *   <li>{@code AMBIGUOUS_PRODUCT} - 2+ product matches (id = null, productId = null)</li>
+     *   <li>{@code NO_ACTIVE_RECIPE} - exactly 1 product but no active recipe (id = null, productId &gt; 0)</li>
+     *   <li>{@code INVALID_SKU_CODE} - skuCode null/blank (id = null, productId = null)</li>
+     * </ul>
      *
      * <p>Source: TASK-G2-02H-2A.
      *
