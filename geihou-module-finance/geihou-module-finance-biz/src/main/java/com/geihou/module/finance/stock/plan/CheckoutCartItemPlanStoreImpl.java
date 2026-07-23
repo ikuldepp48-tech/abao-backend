@@ -81,6 +81,15 @@ public class CheckoutCartItemPlanStoreImpl implements CheckoutCartItemPlanStore 
         mismatchUnless(existing.getSkuId(), command.skuId(), "skuId");
         mismatchUnless(existing.getClassification(), command.classification().name(),
                 "classification");
+        // Slice 2C-2B: six-field exact match on replay
+        mismatchUnless(existing.getSkuCode(), command.skuCode(), "skuCode");
+        mismatchUnless(existing.getStockStrategy(), command.stockStrategy(), "stockStrategy");
+        mismatchUnless(existing.getBomProductId(), command.bomProductId(), "bomProductId");
+        mismatchUnless(existing.getStockItemId(), command.stockItemId(), "stockItemId");
+        mismatchUnless(existing.getLocationId(), command.locationId(), "locationId");
+        mismatchUnless(existing.getClassificationReason(),
+                command.classificationReason() == null ? null : command.classificationReason().name(),
+                "classificationReason");
     }
 
     private static void mismatchUnless(Object existing, Object provided, String name) {
@@ -98,6 +107,14 @@ public class CheckoutCartItemPlanStoreImpl implements CheckoutCartItemPlanStore 
         DO.setCartItemId(command.cartItemId());
         DO.setSkuId(command.skuId());
         DO.setClassification(command.classification().name());
+        // Slice 2C-2B: six normalized write-once fields
+        DO.setSkuCode(command.skuCode());
+        DO.setStockStrategy(command.stockStrategy());
+        DO.setBomProductId(command.bomProductId());
+        DO.setStockItemId(command.stockItemId());
+        DO.setLocationId(command.locationId());
+        DO.setClassificationReason(command.classificationReason() == null
+                ? null : command.classificationReason().name());
         DO.setCreateTime(now);
         DO.setUpdateTime(now);
         return DO;

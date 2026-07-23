@@ -74,13 +74,16 @@ class CartCheckoutDdlConsistencyTest {
             "src/main/resources/db/migration";
 
     private static final List<DdlMapping> DDL_MAPPINGS = List.of(
-            new DdlMapping("V02_060__cart.sql", "cart", CartDO.class),
-            new DdlMapping("V02_061__cart_item.sql", "cart_item", CartItemDO.class),
-            new DdlMapping("V02_062__cart_event_log.sql", "cart_event_log", CartEventLogDO.class),
-            new DdlMapping("V02_063__checkout_session.sql", "checkout_session", CheckoutSessionDO.class),
-            new DdlMapping("V02_064__checkout_idempotent.sql", "checkout_idempotent", CheckoutIdempotentDO.class),
-            new DdlMapping("V02_065__finance_stock_command.sql", "finance_stock_command", FinanceStockCommandDO.class),
-            new DdlMapping("V02_066__checkout_cart_item_plan.sql", "checkout_cart_item_plan", CheckoutCartItemPlanDO.class)
+            new DdlMapping("V02_060__cart.sql", null, "cart", CartDO.class),
+            new DdlMapping("V02_061__cart_item.sql", null, "cart_item", CartItemDO.class),
+            new DdlMapping("V02_062__cart_event_log.sql", null, "cart_event_log", CartEventLogDO.class),
+            new DdlMapping("V02_063__checkout_session.sql", null, "checkout_session", CheckoutSessionDO.class),
+            new DdlMapping("V02_064__checkout_idempotent.sql", null, "checkout_idempotent", CheckoutIdempotentDO.class),
+            new DdlMapping("V02_065__finance_stock_command.sql", null, "finance_stock_command", FinanceStockCommandDO.class),
+            // Slice 2C-2B: V02_066 (CREATE) + V02_067 (ALTER ADD 6 columns) merge
+            new DdlMapping("V02_066__checkout_cart_item_plan.sql",
+                    "V02_067__checkout_cart_item_plan_six_fields.sql",
+                    "checkout_cart_item_plan", CheckoutCartItemPlanDO.class)
     );
 
     // ── Keywords that start constraint/index lines, not column definitions ──
@@ -100,6 +103,12 @@ class CartCheckoutDdlConsistencyTest {
             assertThat(Files.exists(path))
                     .as("DDL file must exist: %s", path)
                     .isTrue();
+            if (mapping.alterDdlFileName != null) {
+                Path alterPath = resolveMigrationPath(mapping.alterDdlFileName);
+                assertThat(Files.exists(alterPath))
+                        .as("ALTER DDL file must exist: %s", alterPath)
+                        .isTrue();
+            }
         }
     }
 
@@ -107,6 +116,10 @@ class CartCheckoutDdlConsistencyTest {
     void ddlColumns_matchDoFields() {
         for (DdlMapping mapping : DDL_MAPPINGS) {
             Set<String> ddlColumns = parseDdlColumns(mapping.ddlFileName);
+            if (mapping.alterDdlFileName != null) {
+                ddlColumns = new LinkedHashSet<>(ddlColumns);
+                ddlColumns.addAll(parseAlterTableColumns(mapping.alterDdlFileName));
+            }
             Set<String> ddlBusinessColumns = new TreeSet<>(ddlColumns);
             ddlBusinessColumns.removeAll(AUDIT_COLUMNS);
 
@@ -135,6 +148,10 @@ class CartCheckoutDdlConsistencyTest {
 
         for (DdlMapping mapping : DDL_MAPPINGS) {
             Set<String> ddlColumns = parseDdlColumns(mapping.ddlFileName);
+            if (mapping.alterDdlFileName != null) {
+                ddlColumns = new LinkedHashSet<>(ddlColumns);
+                ddlColumns.addAll(parseAlterTableColumns(mapping.alterDdlFileName));
+            }
             Set<String> schemaColumns = getH2TableColumns(dataSource, mapping.tableName);
 
             // DDL columns not in TestSchema
@@ -185,6 +202,141 @@ class CartCheckoutDdlConsistencyTest {
     }
 
     // ========================================================================
+    // Slice 2C-2B: six-column type / nullability / no-default assertions
+    // ========================================================================
+
+    /**
+     * Frozen contract (00-全局接口契约汇总表 §5.8.2):
+     * <ul>
+     *   <li>sku_code VARCHAR(64) NULL</li>
+     *   <li>stock_strategy VARCHAR(20) NULL (禁止 VARCHAR(16))</li>
+     *   <li>bom_product_id BIGINT NULL</li>
+     *   <li>stock_item_id BIGINT NULL</li>
+     *   <li>location_id BIGINT NULL</li>
+     *   <li>classification_reason VARCHAR(32) NULL</li>
+     * </ul>
+     * All six must be nullable with no default and no backfill.
+     */
+    @Test
+    void alterTable_sixColumns_exactTypeNullableNoDefault_inDdl() throws IOException {
+        Path alterPath = resolveMigrationPath(
+                "V02_067__checkout_cart_item_plan_six_fields.sql");
+        String content = Files.readString(alterPath, StandardCharsets.UTF_8);
+
+        // Strip comment lines first (lines starting with --), then normalize
+        // whitespace. This prevents comment text like "禁止VARCHAR(16)" from
+        // triggering the forbidden-type assertion, while keeping ADD COLUMN
+        // definitions intact for exact-type checking.
+        String withoutComments = Arrays.stream(content.split("\\n"))
+                .map(String::trim)
+                .filter(line -> !line.startsWith("--"))
+                .collect(Collectors.joining(" "));
+        String normalized = withoutComments.replaceAll("\\s+", " ");
+
+        // Exact type + NULL keyword for each column (case-insensitive)
+        assertThat(normalized).containsIgnoringCase("ADD COLUMN sku_code VARCHAR(64) NULL");
+        assertThat(normalized).containsIgnoringCase("ADD COLUMN stock_strategy VARCHAR(20) NULL");
+        assertThat(normalized).containsIgnoringCase("ADD COLUMN bom_product_id BIGINT NULL");
+        assertThat(normalized).containsIgnoringCase("ADD COLUMN stock_item_id BIGINT NULL");
+        assertThat(normalized).containsIgnoringCase("ADD COLUMN location_id BIGINT NULL");
+        assertThat(normalized).containsIgnoringCase("ADD COLUMN classification_reason VARCHAR(32) NULL");
+
+        // Forbidden: VARCHAR(16) for stock_strategy (frozen contract forbids it).
+        // Strip SQL single-quoted string literals (COMMENT '...') so that
+        // documentation text like "禁止VARCHAR(16)" inside comments does not
+        // trigger the assertion.
+        String columnDefsOnly = normalized.replaceAll("'[^']*'", "");
+        assertThat(columnDefsOnly).doesNotContain("VARCHAR(16)");
+
+        // No DEFAULT keyword in any ADD COLUMN definition
+        // (six columns must have no default, no backfill)
+        assertThat(columnDefsOnly).doesNotContainIgnoringCase("DEFAULT");
+    }
+
+    /**
+     * Verify via H2 INFORMATION_SCHEMA that all six columns are nullable
+     * (IS_NULLABLE = YES) and have no default value (COLUMN_DEFAULT = null).
+     */
+    @Test
+    void alterTable_sixColumns_nullableNoDefault_inH2() throws Exception {
+        DataSource dataSource = createH2DataSource();
+        CheckoutTestSchemaInitializer.initialize(dataSource);
+
+        Map<String, ColumnMeta> columns = getH2ColumnMetadata(dataSource,
+                "checkout_cart_item_plan");
+
+        // H2 reports "CHARACTER VARYING" for VARCHAR; normalize for assertion
+        assertColumnMeta(columns, "sku_code", "CHARACTER VARYING", 64L, true, null);
+        assertColumnMeta(columns, "stock_strategy", "CHARACTER VARYING", 20L, true, null);
+        assertColumnMeta(columns, "bom_product_id", "BIGINT", null, true, null);
+        assertColumnMeta(columns, "stock_item_id", "BIGINT", null, true, null);
+        assertColumnMeta(columns, "location_id", "BIGINT", null, true, null);
+        assertColumnMeta(columns, "classification_reason", "CHARACTER VARYING", 32L, true, null);
+    }
+
+    /**
+     * Query H2 INFORMATION_SCHEMA for column type, length, nullability, and
+     * default value of a table.
+     *
+     * <p>H2 column names: {@code DATA_TYPE} (not TYPE_NAME),
+     * {@code CHARACTER_MAXIMUM_LENGTH}, {@code IS_NULLABLE},
+     * {@code COLUMN_DEFAULT} (not COLUMN_DEF).
+     */
+    private Map<String, ColumnMeta> getH2ColumnMetadata(DataSource dataSource,
+                                                        String tableName) throws SQLException {
+        Map<String, ColumnMeta> result = new LinkedHashMap<>();
+        String sql = "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, " +
+                     "IS_NULLABLE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS " +
+                     "WHERE TABLE_NAME = UPPER('" + tableName + "') " +
+                     "ORDER BY ORDINAL_POSITION";
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                String name = rs.getString("COLUMN_NAME").toLowerCase();
+                String typeName = rs.getString("DATA_TYPE");
+                Long length = rs.getObject("CHARACTER_MAXIMUM_LENGTH", Long.class);
+                String isNullable = rs.getString("IS_NULLABLE");
+                String columnDef = rs.getString("COLUMN_DEFAULT");
+                result.put(name, new ColumnMeta(name, typeName, length,
+                        "YES".equalsIgnoreCase(isNullable), columnDef));
+            }
+        }
+        assertThat(result)
+                .as("No columns found in H2 for table %s", tableName)
+                .isNotEmpty();
+        return result;
+    }
+
+    private static void assertColumnMeta(Map<String, ColumnMeta> columns,
+                                         String columnName, String expectedType,
+                                         Long expectedLength, boolean expectedNullable,
+                                         String expectedDefault) {
+        ColumnMeta meta = columns.get(columnName);
+        assertThat(meta)
+                .as("Column %s must exist in H2 schema", columnName)
+                .isNotNull();
+        assertThat(meta.typeName)
+                .as("Column %s type", columnName)
+                .isEqualTo(expectedType);
+        if (expectedLength != null) {
+            assertThat(meta.length)
+                    .as("Column %s length", columnName)
+                    .isEqualTo(expectedLength);
+        }
+        assertThat(meta.nullable)
+                .as("Column %s must be nullable", columnName)
+                .isTrue();
+        assertThat(meta.columnDef)
+                .as("Column %s must have no default", columnName)
+                .isNull();
+    }
+
+    // ── Column metadata record for type/nullability/default assertions ───────
+    private record ColumnMeta(String name, String typeName, Long length,
+                              boolean nullable, String columnDef) {}
+
+    // ========================================================================
     // Helper methods
     // ========================================================================
 
@@ -195,6 +347,11 @@ class CartCheckoutDdlConsistencyTest {
      * {@code CREATE TABLE ( ... )} block, skipping comment lines, constraint
      * lines ({@code UNIQUE KEY}, {@code KEY}, etc.), and the closing
      * {@code ) ENGINE=...} line.
+     *
+     * <p>If the {@link DdlMapping#alterDdlFileName()} is non-null, also parses
+     * {@code ADD COLUMN <name> <type>} entries from the ALTER TABLE file and
+     * merges them into the result. This supports slice 2C-2B where
+     * V02_066 creates the table and V02_067 adds six nullable columns.
      */
     private Set<String> parseDdlColumns(String ddlFileName) {
         Path path = resolveMigrationPath(ddlFileName);
@@ -248,6 +405,40 @@ class CartCheckoutDdlConsistencyTest {
                 .as("No columns parsed from %s", ddlFileName)
                 .isNotEmpty();
 
+        return columns;
+    }
+
+    /**
+     * Parse {@code ADD COLUMN <name> <type>} entries from an ALTER TABLE file.
+     *
+     * <p>Supports the slice 2C-2B V02_067 form:
+     * <pre>{@code
+     * ALTER TABLE checkout_cart_item_plan
+     *   ADD COLUMN sku_code VARCHAR(64) NULL COMMENT '...',
+     *   ADD COLUMN stock_strategy VARCHAR(20) NULL COMMENT '...';
+     * }</pre>
+     */
+    private Set<String> parseAlterTableColumns(String alterDdlFileName) {
+        Path path = resolveMigrationPath(alterDdlFileName);
+        String content;
+        try {
+            content = Files.readString(path, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read ALTER DDL file: " + path, e);
+        }
+
+        // Match "ADD COLUMN <name> <type>" case-insensitively across the file.
+        // {@code ADD COLUMN} may appear at the start of a line or after a comma.
+        Pattern addColumnPattern = Pattern.compile(
+                "(?i)ADD\\s+COLUMN\\s+(\\w+)\\s+\\w+");
+        Set<String> columns = new LinkedHashSet<>();
+        Matcher m = addColumnPattern.matcher(content);
+        while (m.find()) {
+            columns.add(m.group(1).toLowerCase());
+        }
+        assertThat(columns)
+                .as("No ADD COLUMN entries parsed from %s", alterDdlFileName)
+                .isNotEmpty();
         return columns;
     }
 
@@ -423,7 +614,8 @@ class CartCheckoutDdlConsistencyTest {
     }
 
     // ── Data class for DDL → DO mapping ──────────────────────────────────────
-    private record DdlMapping(String ddlFileName, String tableName, Class<?> doClass) {}
+    private record DdlMapping(String ddlFileName, String alterDdlFileName,
+                              String tableName, Class<?> doClass) {}
 
     /**
      * Index definition: name, ordered columns, unique flag.

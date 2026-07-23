@@ -115,6 +115,9 @@ public final class CheckoutTestSchemaInitializer {
                     """);
 
             // G0-04H185 FIN-CONSISTENCY slice 2B: checkout cart item plan
+            // Slice 2C-2B: six nullable columns (sku_code/stock_strategy/
+            // bom_product_id/stock_item_id/location_id/classification_reason)
+            // mirror V02_066 + V02_067 DDL. All six allow NULL; no defaults.
             stmt.execute("""
                     CREATE TABLE IF NOT EXISTS checkout_cart_item_plan (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -123,6 +126,12 @@ public final class CheckoutTestSchemaInitializer {
                         cart_item_id BIGINT NOT NULL,
                         sku_id BIGINT NOT NULL,
                         classification VARCHAR(16) NOT NULL,
+                        sku_code VARCHAR(64),
+                        stock_strategy VARCHAR(20),
+                        bom_product_id BIGINT,
+                        stock_item_id BIGINT,
+                        location_id BIGINT,
+                        classification_reason VARCHAR(32),
                         create_time DATETIME(3) NOT NULL,
                         update_time DATETIME(3) NOT NULL,
                         CONSTRAINT uk_ccip_tenant_session_cart
