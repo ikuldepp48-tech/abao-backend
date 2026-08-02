@@ -2,6 +2,7 @@ package com.geihou.module.finance.checkout.controller.app.customer;
 
 import com.geihou.common.pojo.CommonResult;
 import com.geihou.module.finance.cart.framework.CartBusinessException;
+import com.geihou.module.finance.cart.framework.CartErrorCodeConstants;
 import com.geihou.module.finance.checkout.controller.app.customer.vo.CheckoutInitiateReqVO;
 import com.geihou.module.finance.checkout.controller.app.customer.vo.CheckoutPayReqVO;
 import com.geihou.module.finance.checkout.controller.app.customer.vo.CheckoutSessionVO;
@@ -60,6 +61,9 @@ public class CustomerCheckoutController {
             CheckoutSessionVO vo = checkoutService.initiateCheckout(reqVO);
             return CommonResult.success(vo);
         } catch (CartBusinessException e) {
+            if (CartErrorCodeConstants.CHECKOUT_STOCK_CLASSIFICATION_UNMAPPED.getCode().equals(e.getCode())) {
+                throw e;
+            }
             return CommonResult.error(e.getCode(), e.getMessage());
         }
     }

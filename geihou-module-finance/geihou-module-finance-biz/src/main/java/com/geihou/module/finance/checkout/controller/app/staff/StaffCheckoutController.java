@@ -82,6 +82,9 @@ public class StaffCheckoutController {
             CheckoutSessionVO vo = checkoutService.staffInitiateCheckout(staffUserId, reqVO);
             return CommonResult.success(vo);
         } catch (CartBusinessException e) {
+            if (CartErrorCodeConstants.CHECKOUT_STOCK_CLASSIFICATION_UNMAPPED.getCode().equals(e.getCode())) {
+                throw e;
+            }
             return CommonResult.error(e.getCode(), e.getMessage());
         }
     }

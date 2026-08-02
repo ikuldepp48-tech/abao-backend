@@ -43,4 +43,7 @@ public final class CartErrorCodeConstants {
     public static final ErrorCode COUPON_INVALID = new ErrorCode(1004012, "Coupon invalid or expired");
     public static final ErrorCode PAYMENT_FAILED = new ErrorCode(1004013, "Payment failed");
     public static final ErrorCode PAYMENT_CALLBACK_VERIFY_FAILED = new ErrorCode(1004014, "Payment callback verification failed");
+
+    // --- Checkout stock classification errors (Slice 2C-2C-A2) ---
+    public static final ErrorCode CHECKOUT_STOCK_CLASSIFICATION_UNMAPPED = new ErrorCode(1004080, "库存分类映射不完整，请修复后重新结算");
 }
