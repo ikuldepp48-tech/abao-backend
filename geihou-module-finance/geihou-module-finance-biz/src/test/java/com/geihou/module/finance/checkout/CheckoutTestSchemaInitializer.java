@@ -139,6 +139,30 @@ public final class CheckoutTestSchemaInitializer {
                     )
                     """);
 
+            // G0-04H185 FIN-CONSISTENCY slice 2C-2D: checkout saga intent.
+            // Mirrors V02_068 (finalization_status defaults PENDING, all frozen
+            // params NOT NULL, finalized_at nullable, DATETIME(3) timestamps).
+            stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS finance_stock_saga_intent (
+                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        tenant_id BIGINT NOT NULL,
+                        saga_type VARCHAR(16) NOT NULL,
+                        saga_id BIGINT NOT NULL,
+                        cart_id BIGINT NOT NULL,
+                        expected_checkout_status VARCHAR(20) NOT NULL,
+                        target_checkout_status VARCHAR(20) NOT NULL,
+                        cart_event_type VARCHAR(32) NOT NULL,
+                        operator_user_id BIGINT NOT NULL,
+                        operator_role VARCHAR(32) NOT NULL,
+                        finalization_status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+                        finalized_at DATETIME(3) NULL,
+                        create_time DATETIME(3) NOT NULL,
+                        update_time DATETIME(3) NOT NULL,
+                        CONSTRAINT uk_fsi_identity
+                            UNIQUE (tenant_id, saga_type, saga_id)
+                    )
+                    """);
+
             // ── Index parity: bring H2 schema indexes in line with Flyway DDL ──
             // CartTestSchemaInitializer creates the cart/cart_item/cart_event_log/
             // checkout_session/checkout_idempotent tables WITHOUT indexes (column
@@ -150,6 +174,7 @@ public final class CheckoutTestSchemaInitializer {
             createIndexesIfMissing(stmt);
 
             // Clean all tables (preserve original cleanup behavior)
+            stmt.execute("DELETE FROM finance_stock_saga_intent");
             stmt.execute("DELETE FROM checkout_cart_item_plan");
             stmt.execute("DELETE FROM finance_stock_command");
             stmt.execute("DELETE FROM checkout_idempotent");
@@ -244,5 +269,11 @@ public final class CheckoutTestSchemaInitializer {
         // CREATE TABLE above; only secondary KEY added here.
         stmt.execute("CREATE INDEX IF NOT EXISTS idx_ccip_tenant_session " +
                 "ON checkout_cart_item_plan (tenant_id, checkout_session_id)");
+
+        // ── finance_stock_saga_intent (V02_068) ──
+        // UNIQUE constraint uk_fsi_identity is declared inline in CREATE TABLE
+        // above; only the secondary scan KEY is added here.
+        stmt.execute("CREATE INDEX IF NOT EXISTS idx_fsi_scan " +
+                "ON finance_stock_saga_intent (tenant_id, finalization_status, update_time)");
     }
 }
